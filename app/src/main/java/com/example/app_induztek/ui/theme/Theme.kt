@@ -10,11 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 
-// =====================================================================
-//  Theme.kt  —  TEMA GLOBAL INDUZTEK
-// =====================================================================
 
-// Esquema por defecto para el Técnico de Terreno
 private val EsquemaTecnico = lightColorScheme(
     primary = VerdeTecnico,
     onPrimary = Blanco,
@@ -31,7 +27,7 @@ private val EsquemaTecnico = lightColorScheme(
 
 private val Formas = Shapes(
     small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp), // Esquinas a 12dp como indica tu mockup
+    medium = RoundedCornerShape(12.dp),
     large = RoundedCornerShape(20.dp)
 )
 
@@ -40,11 +36,10 @@ fun MiRegistroTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    // Para asegurar coherencia visual corporativa, forzamos el tema claro
-    // y aplicamos los colores del perfil del Técnico.
+
     MaterialTheme(
         colorScheme = EsquemaTecnico,
-        typography = Tipografia, // Mantén tu archivo Type.kt original
+        typography = Tipografia,
         shapes = Formas,
         content = content
     )
