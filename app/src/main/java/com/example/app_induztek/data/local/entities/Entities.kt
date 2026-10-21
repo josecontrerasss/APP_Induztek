@@ -5,7 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-// 1. Tabla de Roles
+
 @Entity(tableName = "roles", indices = [Index(value = ["codigo"], unique = true)])
 data class RolEntity(
     @PrimaryKey(autoGenerate = true) val id_rol: Int = 0,
@@ -13,7 +13,7 @@ data class RolEntity(
     val nombre: String
 )
 
-// 2. Tabla de Usuarios (Técnicos y Clientes)
+
 @Entity(
     tableName = "usuarios",
     foreignKeys = [ForeignKey(entity = RolEntity::class, parentColumns = ["id_rol"], childColumns = ["id_rol"], onDelete = ForeignKey.RESTRICT)],
@@ -33,7 +33,7 @@ data class UsuarioEntity(
     val contacto_cargo: String? = null
 )
 
-// 3. Tabla de Instalaciones / Subestaciones
+
 @Entity(
     tableName = "instalaciones",
     foreignKeys = [ForeignKey(entity = UsuarioEntity::class, parentColumns = ["id_usuario"], childColumns = ["id_usuario_cliente"], onDelete = ForeignKey.RESTRICT)],
@@ -49,7 +49,7 @@ data class InstalacionEntity(
     val ultima_actividad: String = "15 may. 2026"
 )
 
-// 4. Tabla de Tipos de Equipo
+
 @Entity(tableName = "tipos_equipo", indices = [Index(value = ["nombre"], unique = true)])
 data class TipoEquipoEntity(
     @PrimaryKey(autoGenerate = true) val id_tipo_equipo: Int = 0,
@@ -57,7 +57,7 @@ data class TipoEquipoEntity(
     val clasificacion: String
 )
 
-// 5. Tabla de Equipos
+
 @Entity(
     tableName = "equipos",
     foreignKeys = [
@@ -82,7 +82,7 @@ data class EquipoEntity(
     val observaciones: String = ""
 )
 
-// 6. Tabla de Visitas
+
 @Entity(
     tableName = "visitas",
     foreignKeys = [ForeignKey(entity = InstalacionEntity::class, parentColumns = ["id_instalacion"], childColumns = ["id_instalacion"], onDelete = ForeignKey.CASCADE)],
@@ -97,7 +97,7 @@ data class VisitaEntity(
     val id_ingeniero_cargo: Int = 3
 )
 
-// 7. Tabla de Protocolos
+
 @Entity(
     tableName = "protocolos",
     foreignKeys = [
