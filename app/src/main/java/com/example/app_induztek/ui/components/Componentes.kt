@@ -22,10 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.app_induztek.R
 
 @Composable
 fun CampoTextoInduztek(
@@ -65,7 +67,7 @@ fun CampoContrasenaInduztek(
         leadingIcon = { Icon(imageVector = icono, contentDescription = null) },
         trailingIcon = {
             val iconImage = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
-            val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+            val description = if (passwordVisible) stringResource(R.string.cd_ocultar_contrasena) else stringResource(R.string.cd_mostrar_contrasena)
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(imageVector = iconImage, contentDescription = description)
             }
@@ -104,4 +106,3 @@ fun BotonPrincipalInduztek(
         }
     }
 }
-

@@ -4,14 +4,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.app_induztek.R
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
 import com.example.app_induztek.ui.components.CampoContrasenaInduztek
 import com.example.app_induztek.ui.components.CampoTextoInduztek
@@ -35,14 +42,20 @@ fun RegistroClienteScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registro de Cliente") },
+                title = { Text(stringResource(R.string.titulo_registro)) },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_volver))
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -53,30 +66,38 @@ fun RegistroClienteScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Crea tu cuenta de empresa",
+                text = stringResource(R.string.subtitulo_registro),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
 
+            Text(
+                text = stringResource(R.string.desc_registro),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             CampoTextoInduztek(
                 valor = state.rut,
                 onValorCambia = { viewModel.onRegistroCampoCambia(rut = it) },
-                etiqueta = "RUT Empresa",
+                etiqueta = stringResource(R.string.campo_rut),
                 icono = Icons.Default.Badge
             )
 
             CampoTextoInduztek(
                 valor = state.nombre,
                 onValorCambia = { viewModel.onRegistroCampoCambia(nombre = it) },
-                etiqueta = "Razón Social / Nombre",
+                etiqueta = stringResource(R.string.campo_razon_social),
                 icono = Icons.Default.Business
             )
 
             CampoTextoInduztek(
                 valor = state.correo,
                 onValorCambia = { viewModel.onRegistroCampoCambia(correo = it) },
-                etiqueta = "Correo Electrónico",
+                etiqueta = stringResource(R.string.campo_correo),
                 icono = Icons.Default.Email,
                 tipoTeclado = KeyboardType.Email
             )
@@ -84,7 +105,7 @@ fun RegistroClienteScreen(
             CampoTextoInduztek(
                 valor = state.telefono,
                 onValorCambia = { viewModel.onRegistroCampoCambia(telefono = it) },
-                etiqueta = "Teléfono de Contacto",
+                etiqueta = stringResource(R.string.campo_telefono),
                 icono = Icons.Default.Phone,
                 tipoTeclado = KeyboardType.Phone
             )
@@ -92,7 +113,7 @@ fun RegistroClienteScreen(
             CampoContrasenaInduztek(
                 valor = state.contrasena,
                 onValorCambia = { viewModel.onRegistroCampoCambia(contrasena = it) },
-                etiqueta = "Contraseña",
+                etiqueta = stringResource(R.string.campo_contrasena),
                 icono = Icons.Default.Lock
             )
 
@@ -104,10 +125,10 @@ fun RegistroClienteScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             BotonPrincipalInduztek(
-                texto = "REGISTRARME",
+                texto = stringResource(R.string.btn_registrarme),
                 onClick = { viewModel.registrarCliente() }
             )
         }
