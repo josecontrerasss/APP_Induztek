@@ -25,7 +25,7 @@ fun TecnicoMedicionScreen(
     viewModel: InduztekViewModel,
     onLogout: () -> Unit
 ) {
-    // Agregamos la observación del currentUser para pasárselo al TopBarHeader
+
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val form by viewModel.formState.collectAsStateWithLifecycle()
     val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
@@ -43,10 +43,9 @@ fun TecnicoMedicionScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHost) },
         topBar = {
-            // Reemplazamos el TopAppBar genérico por el componente de tu compañero
             TopBarHeader(
                 nombreTecnico = currentUser?.nombre ?: "Técnico",
-                onNotificacionesClick = { /* Acción para la campanita */ }
+                onNotificacionesClick = {}
             )
         }
     ) { padding ->
@@ -126,7 +125,6 @@ fun TecnicoMedicionScreen(
                 shape = RoundedCornerShape(8.dp)
             )
 
-            // 5. Botón Guardar
             BotonPrincipalInduztek(
                 texto = "GUARDAR MEDICIÓN EN TERRENO",
                 onClick = { viewModel.guardarMedicion() }
