@@ -20,4 +20,7 @@
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
     <string name="cd_volver">Volver</string>
+
+    <string name="btn_camara">Cámara</string>
+    <string name="permiso_camara_denegado">Sin permiso de cámara no se puede tomar la foto</string>
 </resources>
