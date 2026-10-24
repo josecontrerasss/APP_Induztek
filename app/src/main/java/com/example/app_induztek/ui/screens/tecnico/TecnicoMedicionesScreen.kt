@@ -1,4 +1,4 @@
-package com.example.app_induztek.ui.screens
+package com.example.app_induztek.ui.screens.tecnico
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
