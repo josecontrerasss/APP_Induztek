@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
+import com.example.app_induztek.ui.components.TopBarHeader
 import com.example.app_induztek.ui.viewmodel.InduztekViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,6 +25,8 @@ fun TecnicoMedicionScreen(
     viewModel: InduztekViewModel,
     onLogout: () -> Unit
 ) {
+    // Agregamos la observación del currentUser para pasárselo al TopBarHeader
+    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val form by viewModel.formState.collectAsStateWithLifecycle()
     val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
     val equipos by viewModel.todosLosEquipos.collectAsStateWithLifecycle()
@@ -40,13 +43,10 @@ fun TecnicoMedicionScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHost) },
         topBar = {
-            TopAppBar(
-                title = { Text("INDUZTEK - Terreno (Técnico)", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
-                actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Salir")
-                    }
-                }
+            // Reemplazamos el TopAppBar genérico por el componente de tu compañero
+            TopBarHeader(
+                nombreTecnico = currentUser?.nombre ?: "Técnico",
+                onNotificacionesClick = { /* Acción para la campanita */ }
             )
         }
     ) { padding ->
