@@ -43,9 +43,15 @@ fun TecnicoMedicionScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHost) },
         topBar = {
+            val role = viewModel.currentRole.collectAsStateWithLifecycle().value
             TopBarHeader(
-                nombreTecnico = currentUser?.nombre ?: "Técnico",
-                onNotificacionesClick = {}
+                currentRole = role,
+                userName = currentUser?.nombre ?: "Técnico",
+                title = "INDUZTEK",
+                pendientesSyncCount = pendientes,
+                onSyncClick = { viewModel.sincronizarProtocolos() },
+                onNotificationsClick = { /* Acción para la campanita */ },
+                onLogoutClick = onLogout
             )
         }
     ) { padding ->
