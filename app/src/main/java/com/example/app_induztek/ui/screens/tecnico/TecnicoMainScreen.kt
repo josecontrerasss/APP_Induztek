@@ -64,7 +64,7 @@ fun TecnicoMainScreen(
                 )
                 1 -> TecnicoMedicionScreen(viewModel = viewModel, onLogout = onLogout)
                 2 -> TecnicoEquiposScreen(viewModel = viewModel)
-                3 -> Text("Estado de Sincronización", modifier = Modifier.align(Alignment.Center))
+                3 -> TecnicoSincronizacionScreen(viewModel = viewModel)
                 4 -> TecnicoMasScreen()
             }
         }
