@@ -25,7 +25,6 @@ fun TecnicoMedicionScreen(
     viewModel: InduztekViewModel,
     onLogout: () -> Unit
 ) {
-    // Agregamos la observación del currentUser para pasárselo al TopBarHeader
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val form by viewModel.formState.collectAsStateWithLifecycle()
     val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
@@ -50,7 +49,7 @@ fun TecnicoMedicionScreen(
                 title = "INDUZTEK",
                 pendientesSyncCount = pendientes,
                 onSyncClick = { viewModel.sincronizarProtocolos() },
-                onNotificationsClick = { /* Acción para la campanita */ },
+                onNotificationsClick = {  },
                 onLogoutClick = onLogout
             )
         }

@@ -58,11 +58,14 @@ fun TecnicoMainScreen(
                 .fillMaxSize()
         ) {
             when (pestañaSeleccionada) {
-                0 -> Text("Pantalla de Inicio", modifier = Modifier.align(Alignment.Center))
+                0 -> TecnicoInicioScreen(
+                    viewModel = viewModel,
+                    onNavigateToMediciones = { pestañaSeleccionada = 1 }
+                )
                 1 -> TecnicoMedicionScreen(viewModel = viewModel, onLogout = onLogout)
-                2 -> Text("Gestión de Equipos", modifier = Modifier.align(Alignment.Center))
+                2 -> TecnicoEquiposScreen(viewModel = viewModel)
                 3 -> Text("Estado de Sincronización", modifier = Modifier.align(Alignment.Center))
-                4 -> TecnicoMasScreen() // Integración de la cámara (IE 2.4.1)
+                4 -> TecnicoMasScreen()
             }
         }
     }
