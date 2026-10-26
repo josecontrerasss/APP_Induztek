@@ -22,12 +22,25 @@ import java.util.Date
 import java.util.Locale
 import kotlin.random.Random
 
-
 enum class UserRole {
     TECNICO, // P-01 Técnico de terreno
     CLIENTE  // P-04 Cliente empresa
 }
 
+enum class TecnicoTab {
+    INICIO,
+    MEDICIONES,
+    EQUIPOS,
+    SINCRONIZAR,
+    MAS
+}
+
+enum class ClienteTab {
+    INICIO,
+    PROTOCOLOS,
+    DESCARGAS,
+    PERFIL
+}
 
 data class TecnicoFormState(
     val tensionPrimario: String = "13200",
@@ -57,7 +70,6 @@ class InduztekViewModel(
     private val repository: InduztekRepository
 ) : ViewModel() {
 
-
     private val _currentUser = MutableStateFlow<UsuarioEntity?>(null)
     val currentUser: StateFlow<UsuarioEntity?> = _currentUser.asStateFlow()
 
@@ -76,9 +88,14 @@ class InduztekViewModel(
     private val _currentRole = MutableStateFlow(UserRole.TECNICO)
     val currentRole: StateFlow<UserRole> = _currentRole.asStateFlow()
 
+    // Pestañas de navegación
+    private val _tecnicoTab = MutableStateFlow(TecnicoTab.MEDICIONES)
+    val tecnicoTab: StateFlow<TecnicoTab> = _tecnicoTab.asStateFlow()
+
+    private val _clienteTab = MutableStateFlow(ClienteTab.INICIO)
+    val clienteTab: StateFlow<ClienteTab> = _clienteTab.asStateFlow()
 
     val clienteIdActivo = 10
-
 
     val todasLasInstalaciones: StateFlow<List<InstalacionEntity>> = repository.todasLasInstalaciones
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -86,10 +103,8 @@ class InduztekViewModel(
     val todosLosEquipos: StateFlow<List<EquipoEntity>> = repository.todosLosEquipos
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-
     private val _clienteSearchQuery = MutableStateFlow("")
     val clienteSearchQuery: StateFlow<String> = _clienteSearchQuery.asStateFlow()
-
 
     val instalacionesCliente: StateFlow<List<InstalacionEntity>> = combine(
         repository.getInstalacionesByCliente(clienteIdActivo),
@@ -103,8 +118,10 @@ class InduztekViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-
     val protocolosCliente: StateFlow<List<ProtocoloEntity>> = repository.getProtocolosCliente(clienteIdActivo)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val todosLosProtocolos: StateFlow<List<ProtocoloEntity>> = repository.todosLosProtocolos
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val todasLasMediciones: StateFlow<List<MedicionEntity>> = repository.todasLasMediciones
@@ -112,7 +129,6 @@ class InduztekViewModel(
 
     val pendientesSyncCount: StateFlow<Int> = repository.countPendientesSincronizar
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
 
     private val _formState = MutableStateFlow(TecnicoFormState())
     val formState: StateFlow<TecnicoFormState> = _formState.asStateFlow()
@@ -171,6 +187,13 @@ class InduztekViewModel(
         _loginError.value = null
     }
 
+    fun setTecnicoTab(tab: TecnicoTab) {
+        _tecnicoTab.value = tab
+    }
+
+    fun setClienteTab(tab: ClienteTab) {
+        _clienteTab.value = tab
+    }
 
     fun selectInstalacion(id: Int) {
         _selectedInstalacionId.value = id
@@ -256,6 +279,9 @@ class InduztekViewModel(
         }
     }
 
+    fun simularDescargaCertificado(protocolo: ProtocoloEntity) {
+        _userMessage.value = "Descargando certificado oficial ${protocolo.numero}.pdf..."
+    }
 
     fun setClienteSearchQuery(query: String) {
         _clienteSearchQuery.value = query
@@ -279,17 +305,17 @@ class InduztekViewModel(
         correo: String = _registroState.value.correo,
         telefono: String = _registroState.value.telefono,
         contrasena: String = _registroState.value.contrasena
-    ){
+    ) {
         _registroState.value = _registroState.value.copy(
             rut = rut, nombre = nombre, correo = correo, telefono = telefono,
             contrasena = contrasena, mensajeError = null
         )
     }
 
-    fun registrarCliente(){
+    fun registrarCliente() {
         val state = _registroState.value
         if (state.rut.isBlank() || state.nombre.isBlank() || state.correo.isBlank() ||
-            state.contrasena.isBlank()){
+            state.contrasena.isBlank()) {
             _registroState.value = state.copy(mensajeError = "RUT, Nombre, Correo y Contraseña son obligatorios")
             return
         }
@@ -311,6 +337,7 @@ class InduztekViewModel(
             }
         }
     }
+
     fun limpiarRegistro() {
         _registroState.value = RegistroClienteState()
     }

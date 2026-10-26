@@ -1,9 +1,10 @@
 package com.example.app_induztek.data.local.dao
+
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
+import androidx.room.Update
 import com.example.app_induztek.data.local.entities.EquipoEntity
 import com.example.app_induztek.data.local.entities.InstalacionEntity
 import com.example.app_induztek.data.local.entities.MedicionEntity
@@ -12,57 +13,38 @@ import com.example.app_induztek.data.local.entities.RolEntity
 import com.example.app_induztek.data.local.entities.TipoEquipoEntity
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import com.example.app_induztek.data.local.entities.VisitaEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface InduztekDao {
 
-
-    @Query("SELECT * FROM usuarios WHERE correo = :correo AND password_hash = :password AND activo = 1 LIMIT 1")
-    suspend fun login(correo: String, password: String): UsuarioEntity?
-
-
-    @Query("SELECT r.codigo FROM roles r INNER JOIN usuarios u ON r.id_rol = u.id_rol WHERE u.id_usuario = :usuarioId LIMIT 1")
-    suspend fun getRolCodigoByUsuario(usuarioId: Int): String?
-
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRoles(roles: List<RolEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUsuarios(usuarios: List<UsuarioEntity>)
-
-    @Query("SELECT COUNT(*) FROM roles")
-    suspend fun countRoles(): Int
-
-
+    // --- INSTALACIONES ---
     @Query("SELECT * FROM instalaciones ORDER BY id_instalacion ASC")
     fun getAllInstalaciones(): Flow<List<InstalacionEntity>>
 
+    @Query("SELECT * FROM instalaciones WHERE id_usuario_cliente = :clienteId ORDER BY id_instalacion ASC")
+    fun getInstalacionesByCliente(clienteId: Int): Flow<List<InstalacionEntity>>
 
+    @Query("SELECT * FROM instalaciones WHERE id_instalacion = :id LIMIT 1")
+    fun getInstalacionById(id: Int): Flow<InstalacionEntity?>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertInstalaciones(instalaciones: List<InstalacionEntity>): List<Long>
+
+    // --- EQUIPOS ---
     @Query("SELECT * FROM equipos WHERE id_instalacion = :instalacionId ORDER BY tag ASC")
     fun getEquiposByInstalacion(instalacionId: Int): Flow<List<EquipoEntity>>
 
     @Query("SELECT * FROM equipos ORDER BY id_equipo ASC")
     fun getAllEquipos(): Flow<List<EquipoEntity>>
 
+    @Query("SELECT * FROM equipos WHERE id_equipo = :id LIMIT 1")
+    fun getEquipoById(id: Int): Flow<EquipoEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProtocolo(protocolo: ProtocoloEntity): Long
+    fun insertEquipos(equipos: List<EquipoEntity>): List<Long>
 
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMediciones(mediciones: List<MedicionEntity>)
-
-
-    @Query("SELECT COUNT(*) FROM protocolos WHERE sincronizado = 0")
-    fun countPendientesSincronizar(): Flow<Int>
-
-    @Query("UPDATE protocolos SET sincronizado = 1 WHERE sincronizado = 0")
-    suspend fun sincronizarTodos()
-
-
-    @Query("SELECT * FROM instalaciones WHERE id_usuario_cliente = :clienteId ORDER BY id_instalacion ASC")
-    fun getInstalacionesByCliente(clienteId: Int): Flow<List<InstalacionEntity>>
-
+    // --- PROTOCOLOS ---
     @Query("SELECT * FROM protocolos ORDER BY id_protocolo DESC")
     fun getAllProtocolos(): Flow<List<ProtocoloEntity>>
 
@@ -76,26 +58,62 @@ interface InduztekDao {
     """)
     fun getProtocolosByCliente(clienteId: Int): Flow<List<ProtocoloEntity>>
 
+    @Query("SELECT * FROM protocolos WHERE sincronizado = 0 ORDER BY id_protocolo DESC")
+    fun getProtocolosPendientesSincronizar(): Flow<List<ProtocoloEntity>>
 
+    @Query("SELECT COUNT(*) FROM protocolos WHERE sincronizado = 0")
+    fun countPendientesSincronizar(): Flow<Int>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertProtocolo(protocolo: ProtocoloEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertProtocolos(protocolos: List<ProtocoloEntity>): List<Long>
+
+    @Update
+    fun updateProtocolo(protocolo: ProtocoloEntity): Int
+
+    @Query("UPDATE protocolos SET sincronizado = 1 WHERE sincronizado = 0")
+    fun sincronizarTodos(): Int
+
+    // --- MEDICIONES ---
     @Query("SELECT * FROM mediciones WHERE id_protocolo = :protocoloId ORDER BY id_medicion ASC")
     fun getMedicionesByProtocolo(protocoloId: Int): Flow<List<MedicionEntity>>
 
     @Query("SELECT * FROM mediciones ORDER BY id_medicion ASC")
     fun getAllMediciones(): Flow<List<MedicionEntity>>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertMedicion(medicion: MedicionEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertInstalaciones(instalaciones: List<InstalacionEntity>)
+    fun insertMediciones(mediciones: List<MedicionEntity>): List<Long>
+
+    // --- USUARIOS Y ROLES ---
+    @Query("SELECT * FROM usuarios WHERE correo = :correo AND password_hash = :password AND activo = 1 LIMIT 1")
+    fun login(correo: String, password: String): UsuarioEntity?
+
+    @Query("SELECT r.codigo FROM roles r INNER JOIN usuarios u ON r.id_rol = u.id_rol WHERE u.id_usuario = :usuarioId LIMIT 1")
+    fun getRolCodigoByUsuario(usuarioId: Int): String?
+
+    @Query("SELECT * FROM usuarios WHERE id_usuario = :id LIMIT 1")
+    fun getUsuarioById(id: Int): Flow<UsuarioEntity?>
+
+    @Query("SELECT * FROM usuarios WHERE id_rol = (SELECT id_rol FROM roles WHERE codigo = 'CLIENTE' LIMIT 1)")
+    fun getClientes(): Flow<List<UsuarioEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEquipos(equipos: List<EquipoEntity>)
+    fun insertRoles(roles: List<RolEntity>): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTiposEquipo(tipos: List<TipoEquipoEntity>)
+    fun insertUsuarios(usuarios: List<UsuarioEntity>): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertVisitas(visitas: List<VisitaEntity>)
+    fun insertTiposEquipo(tipos: List<TipoEquipoEntity>): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProtocolos(protocolos: List<ProtocoloEntity>)
+    fun insertVisitas(visitas: List<VisitaEntity>): List<Long>
+
+    @Query("SELECT COUNT(*) FROM roles")
+    fun countRoles(): Int
 }

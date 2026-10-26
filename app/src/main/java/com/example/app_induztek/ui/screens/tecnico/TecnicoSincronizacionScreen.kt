@@ -35,7 +35,7 @@ fun TecnicoSincronizacionScreen(
                 imageVector = Icons.Default.CloudUpload,
                 contentDescription = "Subir datos",
                 modifier = Modifier.size(100.dp),
-                tint = Color(0xFFFB8C00) // Alerta Naranja
+                tint = Color(0xFFFB8C00) //
             )
 
             Spacer(modifier = Modifier.height(24.dp))
