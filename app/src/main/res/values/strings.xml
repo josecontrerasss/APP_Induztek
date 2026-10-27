@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">APP_Induztek</string>
+
+    <string name="titulo_portal">Portal Induztek</string>
+    <string name="subtitulo_login">Ingresa tus credenciales para continuar</string>
+    <string name="campo_correo">Correo Electrónico</string>
+    <string name="campo_contrasena">Contraseña</string>
+    <string name="btn_iniciar_sesion">INICIAR SESIÓN</string>
+    <string name="btn_olvide_pass">¿Olvidaste tu contraseña?</string>
+    <string name="btn_ir_registro">¿No tienes cuenta empresa? Regístrate aquí</string>
+
+    <string name="titulo_registro">Registro de Cliente</string>
+    <string name="subtitulo_registro">Crea tu cuenta de empresa</string>
+    <string name="desc_registro">Completa los datos para acceder a tus protocolos.</string>
+    <string name="campo_rut">RUT Empresa</string>
+    <string name="campo_razon_social">Razón Social / Nombre</string>
+    <string name="campo_telefono">Teléfono de Contacto</string>
+    <string name="btn_registrarme">REGISTRARME</string>
+
+    <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
+    <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
+    <string name="cd_volver">Volver</string>
+
+    <string name="btn_camara">Cámara</string>
+    <string name="permiso_camara_denegado">Sin permiso de cámara no se puede tomar la foto</string>
+</resources>
