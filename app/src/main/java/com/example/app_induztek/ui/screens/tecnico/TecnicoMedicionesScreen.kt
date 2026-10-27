@@ -1,5 +1,9 @@
 package com.example.app_induztek.ui.screens.tecnico
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,14 +14,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
 import com.example.app_induztek.ui.components.TopBarHeader
+import com.example.app_induztek.ui.theme.*
 import com.example.app_induztek.ui.viewmodel.InduztekViewModel
+import com.google.android.gms.location.LocationServices
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,10 +69,9 @@ fun TecnicoMedicionScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = if (pendientes > 0) Color(0xFFFFF3E0) else Color(0xFFE8F5E9)
+                    containerColor = if (pendientes > 0) Sincronizacion.copy(alpha = 0.15f) else VerdeFondo
                 )
             ) {
                 Row(
@@ -75,20 +81,19 @@ fun TecnicoMedicionScreen(
                 ) {
                     Text(
                         text = if (pendientes > 0) "$pendientes mediciones por sincronizar" else "SQLite local sincronizado ✔",
-                        color = if (pendientes > 0) Color(0xFFE65100) else Color(0xFF2E7D32),
+                        color = if (pendientes > 0) AlertaNaranja else ExitoVerde,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
                     )
                     if (pendientes > 0) {
                         TextButton(onClick = { viewModel.sincronizarProtocolos() }) {
-                            Text("Sincronizar ahora")
+                            Text("Sincronizar ahora", color = TextoOscuro)
                         }
                     }
                 }
             }
 
-
-            Text("Subestación y Equipo:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Text("Subestación y Equipo:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 instalaciones.forEach { inst ->
                     FilterChip(
@@ -108,8 +113,7 @@ fun TecnicoMedicionScreen(
                 }
             }
 
-
-            Text("Mediciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Text("Mediciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
             CampoMedicion("Tensión Primario", form.tensionPrimario, "V") { viewModel.onTensionPrimarioChange(it) }
             CampoMedicion("Tensión Secundario", form.tensionSecundario, "V") { viewModel.onTensionSecundarioChange(it) }
             CampoMedicion("Corriente Medida", form.corriente, "A") { viewModel.onCorrienteChange(it) }
@@ -118,10 +122,9 @@ fun TecnicoMedicionScreen(
                 viewModel.onTemperaturaChange(it)
             }
 
-
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Observaciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                Text("${form.observaciones.length}/200", fontSize = 12.sp, color = Color.Gray)
+                Text("Observaciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
+                Text("${form.observaciones.length}/200", fontSize = 12.sp, color = TextoSecundario)
             }
             OutlinedTextField(
                 value = form.observaciones,
@@ -130,7 +133,10 @@ fun TecnicoMedicionScreen(
                 shape = RoundedCornerShape(8.dp)
             )
 
-            // 5. Botón Guardar
+            BotonUbicacionMedicion(
+                onUbicacionCapturada = { lat, lon -> viewModel.onUbicacionCapturada(lat, lon) }
+            )
+
             BotonPrincipalInduztek(
                 texto = "GUARDAR MEDICIÓN EN TERRENO",
                 onClick = { viewModel.guardarMedicion() }
@@ -150,13 +156,13 @@ private fun CampoMedicion(
     OutlinedTextField(
         value = valor,
         onValueChange = onCambio,
-        label = { Text(label) },
-        suffix = { Text(unidad, fontWeight = FontWeight.Bold) },
+        label = { Text(label, color = TextoSecundario) },
+        suffix = { Text(unidad, fontWeight = FontWeight.Bold, color = TextoOscuro) },
         trailingIcon = {
             Icon(
                 imageVector = if (esAlerta) Icons.Default.Warning else Icons.Default.CheckCircle,
                 contentDescription = null,
-                tint = if (esAlerta) Color(0xFFC62828) else Color(0xFF2E7D32)
+                tint = if (esAlerta) ErrorRojo else ExitoVerde
             )
         },
         singleLine = true,
@@ -165,3 +171,87 @@ private fun CampoMedicion(
     )
 }
 
+@Composable
+fun BotonUbicacionMedicion(onUbicacionCapturada: (String, String) -> Unit) {
+    val contexto = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(contexto) }
+    var latitud by remember { mutableStateOf("") }
+    var longitud by remember { mutableStateOf("") }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permisos ->
+        if (permisos[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+            if (ContextCompat.checkSelfPermission(contexto, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { ubicacion ->
+                    ubicacion?.let {
+                        latitud = it.latitude.toString()
+                        longitud = it.longitude.toString()
+                        onUbicacionCapturada(latitud, longitud)
+                    }
+                }
+            }
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Button(
+            onClick = {
+                if (ContextCompat.checkSelfPermission(contexto, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { ubicacion ->
+                        ubicacion?.let {
+                            latitud = it.latitude.toString()
+                            longitud = it.longitude.toString()
+                            onUbicacionCapturada(latitud, longitud)
+                        }
+                    }
+                } else {
+                    permissionLauncher.launch(arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ))
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = VerdeTecnico,
+                contentColor = Blanco
+            )
+        ) {
+            Icon(Icons.Default.LocationOn, contentDescription = "GPS")
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Validar ubicación en terreno")
+        }
+
+        if (latitud.isNotEmpty() && longitud.isNotEmpty()) {
+            Text(
+                text = "📍 Coordenadas: $latitud, $longitud",
+                color = TextoOscuro,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
+            )
+
+            val latLng = com.google.android.gms.maps.model.LatLng(latitud.toDouble(), longitud.toDouble())
+            val cameraPositionState = com.google.maps.android.compose.rememberCameraPositionState {
+                position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(latLng, 15f)
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(top = 8.dp)
+            ) {
+                com.google.maps.android.compose.GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    com.google.maps.android.compose.Marker(
+                        state = com.google.maps.android.compose.MarkerState(position = latLng),
+                        title = "Ubicación del Técnico"
+                    )
+                }
+            }
+        }
+    }
+}

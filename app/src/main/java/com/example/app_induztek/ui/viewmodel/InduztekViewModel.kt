@@ -23,8 +23,8 @@ import java.util.Locale
 import kotlin.random.Random
 
 enum class UserRole {
-    TECNICO, // P-01 Técnico de terreno
-    CLIENTE  // P-04 Cliente empresa
+    TECNICO,
+    CLIENTE
 }
 
 enum class TecnicoTab {
@@ -53,7 +53,9 @@ data class TecnicoFormState(
     val isTensionSecundarioOk: Boolean = true,
     val isCorrienteOk: Boolean = true,
     val isResistenciaOk: Boolean = true,
-    val isTemperaturaAlerta: Boolean = true // Mayor a 45°C muestra advertencia [!]
+    val isTemperaturaAlerta: Boolean = true,
+    val latitud: String = "",
+    val longitud: String = ""
 )
 
 data class RegistroClienteState(
@@ -88,7 +90,6 @@ class InduztekViewModel(
     private val _currentRole = MutableStateFlow(UserRole.TECNICO)
     val currentRole: StateFlow<UserRole> = _currentRole.asStateFlow()
 
-    // Pestañas de navegación
     private val _tecnicoTab = MutableStateFlow(TecnicoTab.MEDICIONES)
     val tecnicoTab: StateFlow<TecnicoTab> = _tecnicoTab.asStateFlow()
 
@@ -236,6 +237,10 @@ class InduztekViewModel(
         }
     }
 
+    fun onUbicacionCapturada(lat: String, lon: String) {
+        _formState.value = _formState.value.copy(latitud = lat, longitud = lon)
+    }
+
     fun guardarMedicion() {
         viewModelScope.launch {
             val equipoId = _selectedEquipoId.value ?: 1
@@ -243,6 +248,12 @@ class InduztekViewModel(
             val numeroProtocolo = "PT-2026-0$randomSuffix"
             val now = SimpleDateFormat("dd MMM. yyyy, HH:mm", Locale("es", "CL")).format(Date())
             val tempVal = _formState.value.temperaturaAceite.toDoubleOrNull() ?: 25.0
+
+            val obsConUbicacion = if (_formState.value.latitud.isNotBlank()) {
+                "${_formState.value.observaciones} [GPS: ${_formState.value.latitud}, ${_formState.value.longitud}]"
+            } else {
+                _formState.value.observaciones
+            }
 
             val nuevoProtocolo = ProtocoloEntity(
                 numero = numeroProtocolo,
@@ -253,7 +264,7 @@ class InduztekViewModel(
                 temperatura_c = tempVal,
                 humedad_pct = 44.0,
                 descripcion_mantenimiento = "Mediciones eléctricas de control en terreno.",
-                observaciones = _formState.value.observaciones,
+                observaciones = obsConUbicacion,
                 estado = "REGISTRADO_TERRENO",
                 resultado = if (_formState.value.isTemperaturaAlerta) "OBSERVADO" else "APROBADO",
                 sincronizado = false
@@ -354,4 +365,3 @@ class InduztekViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-
