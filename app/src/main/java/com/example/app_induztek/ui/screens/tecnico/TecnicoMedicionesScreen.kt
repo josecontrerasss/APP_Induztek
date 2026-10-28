@@ -92,7 +92,7 @@ fun TecnicoMedicionScreen(
             }
         }
 
-        Text("Mediciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
+        Text("Mediciones:", fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = TextoOscuro)
 
         CampoMedicion("Tensión Primario", form.tensionPrimario, "V", keyboardType = KeyboardType.Number) { viewModel.onTensionPrimarioChange(it) }
         CampoMedicion("Tensión Secundario", form.tensionSecundario, "V", keyboardType = KeyboardType.Number) { viewModel.onTensionSecundarioChange(it) }
@@ -120,7 +120,7 @@ fun TecnicoMedicionScreen(
 
         BotonPrincipalInduztek(
             texto = "GUARDAR MEDICIÓN EN TERRENO",
-            onClick = { viewModel.guardarMedicionConContexto(contexto) }
+            onClick = { viewModel.guardarMedicion() }
         )
     }
 }
