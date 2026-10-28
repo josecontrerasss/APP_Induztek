@@ -1,8 +1,5 @@
 package com.example.app_induztek.ui.viewmodel
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -20,8 +17,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -47,11 +42,11 @@ enum class ClienteTab {
 }
 
 data class TecnicoFormState(
-    val tensionPrimario: String = "",
-    val tensionSecundario: String = "",
-    val corriente: String = "",
-    val resistenciaAislamiento: String = ">",
-    val temperaturaAceite: String = "",
+    val tensionPrimario: String = "13200",
+    val tensionSecundario: String = "420",
+    val corriente: String = "256.5",
+    val resistenciaAislamiento: String = "> 1000",
+    val temperaturaAceite: String = "48.2",
     val observaciones: String = "Equipo operando en condiciones normales.",
     val isTensionPrimarioOk: Boolean = true,
     val isTensionSecundarioOk: Boolean = true,
@@ -60,7 +55,7 @@ data class TecnicoFormState(
     val isTemperaturaAlerta: Boolean = true,
     val latitud: String = "",
     val longitud: String = "",
-    val fotoBitmap: Bitmap? = null
+    val fotoBitmap: android.graphics.Bitmap? = null
 )
 
 data class RegistroClienteState(
@@ -138,6 +133,9 @@ class InduztekViewModel(
 
     private val _formState = MutableStateFlow(TecnicoFormState())
     val formState: StateFlow<TecnicoFormState> = _formState.asStateFlow()
+
+    private val _ultimaFotoCapturada = MutableStateFlow<android.graphics.Bitmap?>(null)
+    val ultimaFotoCapturada: StateFlow<android.graphics.Bitmap?> = _ultimaFotoCapturada.asStateFlow()
 
     private val _selectedInstalacionId = MutableStateFlow<Int?>(1)
     val selectedInstalacionId: StateFlow<Int?> = _selectedInstalacionId.asStateFlow()
@@ -246,27 +244,15 @@ class InduztekViewModel(
         _formState.value = _formState.value.copy(latitud = lat, longitud = lon)
     }
 
-    fun onFotoCapturadaBitmap(bitmap: Bitmap) {
+    fun onFotoCapturadaBitmap(bitmap: android.graphics.Bitmap) {
+        _ultimaFotoCapturada.value = bitmap
         _formState.value = _formState.value.copy(
             fotoBitmap = bitmap,
             observaciones = "${_formState.value.observaciones} [Evidencia Fotográfica Adjunta]"
         )
     }
 
-    private fun guardarBitmapInterno(context: Context, bitmap: Bitmap, fileName: String): String? {
-        return try {
-            val file = File(context.filesDir, fileName)
-            val fos = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos)
-            fos.flush()
-            fos.close()
-            file.absolutePath
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun guardarMedicionConContexto(context: Context) {
+    fun guardarMedicion() {
         viewModelScope.launch {
             val equipoId = _selectedEquipoId.value ?: 1
             val timeMillis = System.currentTimeMillis()
@@ -278,10 +264,6 @@ class InduztekViewModel(
                 "${_formState.value.observaciones} [GPS: ${_formState.value.latitud}, ${_formState.value.longitud}]"
             } else {
                 _formState.value.observaciones
-            }
-
-            val pathFoto = _formState.value.fotoBitmap?.let { bitmap ->
-                guardarBitmapInterno(context, bitmap, "foto_$timeMillis.jpg")
             }
 
             val nuevoProtocolo = ProtocoloEntity(
@@ -297,8 +279,7 @@ class InduztekViewModel(
                 observaciones = obsConUbicacion,
                 estado = "REGISTRADO_TERRENO",
                 resultado = if (_formState.value.isTemperaturaAlerta) "OBSERVADO" else "APROBADO",
-                sincronizado = false,
-                fotoPath = pathFoto ?: ""
+                sincronizado = false
             )
 
             val mediciones = listOf(
@@ -311,8 +292,7 @@ class InduztekViewModel(
 
             repository.guardarMedicionEnTerreno(nuevoProtocolo, mediciones)
             _userMessage.value = "¡Medición guardada en SQLite local! (Protocolo: $numeroProtocolo)"
-
-            _formState.value = TecnicoFormState()
+            _formState.value = _formState.value.copy(fotoBitmap = null)
         }
     }
 
