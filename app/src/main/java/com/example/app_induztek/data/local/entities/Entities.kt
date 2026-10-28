@@ -104,7 +104,7 @@ data class VisitaEntity(
         ForeignKey(entity = VisitaEntity::class, parentColumns = ["id_visita"], childColumns = ["id_visita"], onDelete = ForeignKey.CASCADE),
         ForeignKey(entity = EquipoEntity::class, parentColumns = ["id_equipo"], childColumns = ["id_equipo"], onDelete = ForeignKey.CASCADE)
     ],
-    indices = [Index(value = ["numero"], unique = true), Index(value = ["id_visita", "id_equipo"], unique = true), Index(value = ["id_equipo"])]
+    indices = [Index(value = ["numero"], unique = true), Index(value = ["id_equipo"])]
 )
 data class ProtocoloEntity(
     @PrimaryKey(autoGenerate = true) val id_protocolo: Int = 0,
@@ -137,4 +137,3 @@ data class MedicionEntity(
     val unidad: String,
     val estado_alerta: String = "OK"
 )
-

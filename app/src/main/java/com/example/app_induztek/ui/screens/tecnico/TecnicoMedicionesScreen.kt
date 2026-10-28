@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
-import com.example.app_induztek.ui.components.TopBarHeader
 import com.example.app_induztek.ui.theme.*
 import com.example.app_induztek.ui.viewmodel.InduztekViewModel
 import com.google.android.gms.location.LocationServices
@@ -32,116 +31,92 @@ fun TecnicoMedicionScreen(
     viewModel: InduztekViewModel,
     onLogout: () -> Unit
 ) {
-    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val form by viewModel.formState.collectAsStateWithLifecycle()
     val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
     val equipos by viewModel.todosLosEquipos.collectAsStateWithLifecycle()
     val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
-    val userMsg by viewModel.userMessage.collectAsStateWithLifecycle()
     val selInstalacion by viewModel.selectedInstalacionId.collectAsStateWithLifecycle()
     val selEquipo by viewModel.selectedEquipoId.collectAsStateWithLifecycle()
 
-    val snackbarHost = remember { SnackbarHostState() }
-    LaunchedEffect(userMsg) {
-        userMsg?.let { snackbarHost.showSnackbar(it); viewModel.clearUserMessage() }
-    }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHost) },
-        topBar = {
-            val role = viewModel.currentRole.collectAsStateWithLifecycle().value
-            TopBarHeader(
-                currentRole = role,
-                userName = currentUser?.nombre ?: "Técnico",
-                title = "INDUZTEK",
-                pendientesSyncCount = pendientes,
-                onSyncClick = { viewModel.sincronizarProtocolos() },
-                onNotificationsClick = {  },
-                onLogoutClick = onLogout
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = if (pendientes > 0) Sincronizacion.copy(alpha = 0.15f) else VerdeFondo
             )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (pendientes > 0) Sincronizacion.copy(alpha = 0.15f) else VerdeFondo
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (pendientes > 0) "$pendientes mediciones por sincronizar" else "SQLite local sincronizado ✔",
-                        color = if (pendientes > 0) AlertaNaranja else ExitoVerde,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    )
-                    if (pendientes > 0) {
-                        TextButton(onClick = { viewModel.sincronizarProtocolos() }) {
-                            Text("Sincronizar ahora", color = TextoOscuro)
-                        }
+                Text(
+                    text = if (pendientes > 0) "$pendientes mediciones por sincronizar" else "SQLite local sincronizado ✔",
+                    color = if (pendientes > 0) AlertaNaranja else ExitoVerde,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
+                if (pendientes > 0) {
+                    TextButton(onClick = { viewModel.sincronizarProtocolos() }) {
+                        Text("Sincronizar ahora", color = TextoOscuro)
                     }
                 }
             }
-
-            Text("Subestación y Equipo:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                instalaciones.forEach { inst ->
-                    FilterChip(
-                        selected = selInstalacion == inst.id_instalacion,
-                        onClick = { viewModel.selectInstalacion(inst.id_instalacion) },
-                        label = { Text(inst.codigo) }
-                    )
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                equipos.filter { it.id_instalacion == selInstalacion }.forEach { eq ->
-                    FilterChip(
-                        selected = selEquipo == eq.id_equipo,
-                        onClick = { viewModel.selectEquipo(eq.id_equipo) },
-                        label = { Text(eq.tag) }
-                    )
-                }
-            }
-
-            Text("Mediciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
-            CampoMedicion("Tensión Primario", form.tensionPrimario, "V") { viewModel.onTensionPrimarioChange(it) }
-            CampoMedicion("Tensión Secundario", form.tensionSecundario, "V") { viewModel.onTensionSecundarioChange(it) }
-            CampoMedicion("Corriente Medida", form.corriente, "A") { viewModel.onCorrienteChange(it) }
-            CampoMedicion("Resistencia Aislamiento", form.resistenciaAislamiento, "MΩ") { viewModel.onResistenciaChange(it) }
-            CampoMedicion("Temperatura Aceite", form.temperaturaAceite, "°C", esAlerta = form.isTemperaturaAlerta) {
-                viewModel.onTemperaturaChange(it)
-            }
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Observaciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
-                Text("${form.observaciones.length}/200", fontSize = 12.sp, color = TextoSecundario)
-            }
-            OutlinedTextField(
-                value = form.observaciones,
-                onValueChange = { viewModel.onObservacionesChange(it) },
-                modifier = Modifier.fillMaxWidth().height(80.dp),
-                shape = RoundedCornerShape(8.dp)
-            )
-
-            BotonUbicacionMedicion(
-                onUbicacionCapturada = { lat, lon -> viewModel.onUbicacionCapturada(lat, lon) }
-            )
-
-            BotonPrincipalInduztek(
-                texto = "GUARDAR MEDICIÓN EN TERRENO",
-                onClick = { viewModel.guardarMedicion() }
-            )
         }
+
+        Text("Subestación y Equipo:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            instalaciones.forEach { inst ->
+                FilterChip(
+                    selected = selInstalacion == inst.id_instalacion,
+                    onClick = { viewModel.selectInstalacion(inst.id_instalacion) },
+                    label = { Text(inst.codigo) }
+                )
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            equipos.filter { it.id_instalacion == selInstalacion }.forEach { eq ->
+                FilterChip(
+                    selected = selEquipo == eq.id_equipo,
+                    onClick = { viewModel.selectEquipo(eq.id_equipo) },
+                    label = { Text(eq.tag) }
+                )
+            }
+        }
+
+        Text("Mediciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
+        CampoMedicion("Tensión Primario", form.tensionPrimario, "V") { viewModel.onTensionPrimarioChange(it) }
+        CampoMedicion("Tensión Secundario", form.tensionSecundario, "V") { viewModel.onTensionSecundarioChange(it) }
+        CampoMedicion("Corriente Medida", form.corriente, "A") { viewModel.onCorrienteChange(it) }
+        CampoMedicion("Resistencia Aislamiento", form.resistenciaAislamiento, "MΩ") { viewModel.onResistenciaChange(it) }
+        CampoMedicion("Temperatura Aceite", form.temperaturaAceite, "°C", esAlerta = form.isTemperaturaAlerta) {
+            viewModel.onTemperaturaChange(it)
+        }
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Observaciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
+            Text("${form.observaciones.length}/200", fontSize = 12.sp, color = TextoSecundario)
+        }
+        OutlinedTextField(
+            value = form.observaciones,
+            onValueChange = { viewModel.onObservacionesChange(it) },
+            modifier = Modifier.fillMaxWidth().height(80.dp),
+            shape = RoundedCornerShape(8.dp)
+        )
+
+        BotonUbicacionMedicion(
+            onUbicacionCapturada = { lat, lon -> viewModel.onUbicacionCapturada(lat, lon) }
+        )
+
+        BotonPrincipalInduztek(
+            texto = "GUARDAR MEDICIÓN EN TERRENO",
+            onClick = { viewModel.guardarMedicion() }
+        )
     }
 }
 

@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.random.Random
 
 enum class UserRole {
     TECNICO,
@@ -55,7 +54,8 @@ data class TecnicoFormState(
     val isResistenciaOk: Boolean = true,
     val isTemperaturaAlerta: Boolean = true,
     val latitud: String = "",
-    val longitud: String = ""
+    val longitud: String = "",
+    val fotoBitmap: android.graphics.Bitmap? = null
 )
 
 data class RegistroClienteState(
@@ -133,6 +133,9 @@ class InduztekViewModel(
 
     private val _formState = MutableStateFlow(TecnicoFormState())
     val formState: StateFlow<TecnicoFormState> = _formState.asStateFlow()
+
+    private val _ultimaFotoCapturada = MutableStateFlow<android.graphics.Bitmap?>(null)
+    val ultimaFotoCapturada: StateFlow<android.graphics.Bitmap?> = _ultimaFotoCapturada.asStateFlow()
 
     private val _selectedInstalacionId = MutableStateFlow<Int?>(1)
     val selectedInstalacionId: StateFlow<Int?> = _selectedInstalacionId.asStateFlow()
@@ -241,11 +244,19 @@ class InduztekViewModel(
         _formState.value = _formState.value.copy(latitud = lat, longitud = lon)
     }
 
+    fun onFotoCapturadaBitmap(bitmap: android.graphics.Bitmap) {
+        _ultimaFotoCapturada.value = bitmap
+        _formState.value = _formState.value.copy(
+            fotoBitmap = bitmap,
+            observaciones = "${_formState.value.observaciones} [Evidencia Fotográfica Adjunta]"
+        )
+    }
+
     fun guardarMedicion() {
         viewModelScope.launch {
             val equipoId = _selectedEquipoId.value ?: 1
-            val randomSuffix = Random.nextInt(100, 999)
-            val numeroProtocolo = "PT-2026-0$randomSuffix"
+            val timeMillis = System.currentTimeMillis()
+            val numeroProtocolo = "PT-2026-$timeMillis"
             val now = SimpleDateFormat("dd MMM. yyyy, HH:mm", Locale("es", "CL")).format(Date())
             val tempVal = _formState.value.temperaturaAceite.toDoubleOrNull() ?: 25.0
 
@@ -256,6 +267,7 @@ class InduztekViewModel(
             }
 
             val nuevoProtocolo = ProtocoloEntity(
+                id_protocolo = 0,
                 numero = numeroProtocolo,
                 id_visita = 1,
                 id_equipo = equipoId,
@@ -280,6 +292,7 @@ class InduztekViewModel(
 
             repository.guardarMedicionEnTerreno(nuevoProtocolo, mediciones)
             _userMessage.value = "¡Medición guardada en SQLite local! (Protocolo: $numeroProtocolo)"
+            _formState.value = _formState.value.copy(fotoBitmap = null)
         }
     }
 

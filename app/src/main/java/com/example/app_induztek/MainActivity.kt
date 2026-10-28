@@ -188,7 +188,7 @@ fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
                         )
                         TecnicoTab.EQUIPOS -> TecnicoEquiposScreen(viewModel = viewModel)
                         TecnicoTab.SINCRONIZAR -> TecnicoSincronizacionScreen(viewModel = viewModel)
-                        TecnicoTab.MAS -> TecnicoMasScreen()
+                        TecnicoTab.MAS -> TecnicoMasScreen(viewModel = viewModel)
                     }
                 }
                 UserRole.CLIENTE -> {
@@ -201,7 +201,6 @@ fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
                 }
             }
 
-            // Modal de Detalle de Protocolo Eléctrico
             selectedProtocoloDetalle?.let { proto ->
                 ProtocoloDetalleDialog(
                     protocolo = proto,

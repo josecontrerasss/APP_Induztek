@@ -65,7 +65,7 @@ fun TecnicoMainScreen(
                 1 -> TecnicoMedicionScreen(viewModel = viewModel, onLogout = onLogout)
                 2 -> TecnicoEquiposScreen(viewModel = viewModel)
                 3 -> TecnicoSincronizacionScreen(viewModel = viewModel)
-                4 -> TecnicoMasScreen()
+                4 -> TecnicoMasScreen(viewModel = viewModel)
             }
         }
     }
