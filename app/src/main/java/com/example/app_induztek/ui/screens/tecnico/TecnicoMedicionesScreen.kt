@@ -120,7 +120,7 @@ fun TecnicoMedicionScreen(
 
         BotonPrincipalInduztek(
             texto = "GUARDAR MEDICIÓN EN TERRENO",
-            onClick = { viewModel.guardarMedicion() }
+            onClick = { viewModel.guardarMedicionConContexto(contexto) }
         )
     }
 }
