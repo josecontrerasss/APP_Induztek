@@ -2,7 +2,7 @@ package com.example.app_induztek.ui.screens.tecnico
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,7 +44,6 @@ fun TecnicoMasScreen(viewModel: InduztekViewModel) {
     val protocolos by viewModel.todosLosProtocolos.collectAsStateWithLifecycle()
     val todasLasMediciones by viewModel.todasLasMediciones.collectAsStateWithLifecycle()
     val formState by viewModel.formState.collectAsStateWithLifecycle()
-    val ultimaFoto by viewModel.ultimaFotoCapturada.collectAsStateWithLifecycle()
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
@@ -187,7 +186,7 @@ fun TecnicoMasScreen(viewModel: InduztekViewModel) {
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            itemsIndexed(protocolos) { index, protocolo ->
+                            itemsIndexed(protocolos) { _, protocolo ->
                                 val medicionesDelProtocolo = todasLasMediciones.filter { it.id_protocolo == protocolo.id_protocolo }
 
                                 Card(
@@ -244,20 +243,24 @@ fun TecnicoMasScreen(viewModel: InduztekViewModel) {
                                             Text(text = "Obs: ${protocolo.observaciones}", fontSize = 11.sp, color = Color.Gray)
                                         }
 
-                                        // Muestra la foto de forma persistente en el registro más reciente del historial
-                                        if (index == 0 && ultimaFoto != null) {
-                                            Spacer(modifier = Modifier.height(4.dp))
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(120.dp)
-                                                    .clip(RoundedCornerShape(8.dp))
-                                            ) {
-                                                Image(
-                                                    bitmap = ultimaFoto!!.asImageBitmap(),
-                                                    contentDescription = "Evidencia en historial",
-                                                    modifier = Modifier.fillMaxSize()
-                                                )
+                                        if (!protocolo.fotoPath.isNullOrEmpty()) {
+                                            val bitmapFoto = remember(protocolo.fotoPath) {
+                                                BitmapFactory.decodeFile(protocolo.fotoPath)
+                                            }
+                                            if (bitmapFoto != null) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(120.dp)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                ) {
+                                                    Image(
+                                                        bitmap = bitmapFoto.asImageBitmap(),
+                                                        contentDescription = "Evidencia persistente",
+                                                        modifier = Modifier.fillMaxSize()
+                                                    )
+                                                }
                                             }
                                         }
                                     }

@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -31,6 +33,7 @@ fun TecnicoMedicionScreen(
     viewModel: InduztekViewModel,
     onLogout: () -> Unit
 ) {
+    val contexto = LocalContext.current
     val form by viewModel.formState.collectAsStateWithLifecycle()
     val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
     val equipos by viewModel.todosLosEquipos.collectAsStateWithLifecycle()
@@ -90,11 +93,13 @@ fun TecnicoMedicionScreen(
         }
 
         Text("Mediciones:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
-        CampoMedicion("Tensión Primario", form.tensionPrimario, "V") { viewModel.onTensionPrimarioChange(it) }
-        CampoMedicion("Tensión Secundario", form.tensionSecundario, "V") { viewModel.onTensionSecundarioChange(it) }
-        CampoMedicion("Corriente Medida", form.corriente, "A") { viewModel.onCorrienteChange(it) }
-        CampoMedicion("Resistencia Aislamiento", form.resistenciaAislamiento, "MΩ") { viewModel.onResistenciaChange(it) }
-        CampoMedicion("Temperatura Aceite", form.temperaturaAceite, "°C", esAlerta = form.isTemperaturaAlerta) {
+
+        CampoMedicion("Tensión Primario", form.tensionPrimario, "V", keyboardType = KeyboardType.Number) { viewModel.onTensionPrimarioChange(it) }
+        CampoMedicion("Tensión Secundario", form.tensionSecundario, "V", keyboardType = KeyboardType.Number) { viewModel.onTensionSecundarioChange(it) }
+        CampoMedicion("Corriente Medida", form.corriente, "A", keyboardType = KeyboardType.Decimal) { viewModel.onCorrienteChange(it) }
+        CampoMedicion("Resistencia Aislamiento", form.resistenciaAislamiento, "MΩ", keyboardType = KeyboardType.Text) { viewModel.onResistenciaChange(it) }
+
+        CampoMedicion("Temperatura Aceite", form.temperaturaAceite, "°C", esAlerta = form.isTemperaturaAlerta, keyboardType = KeyboardType.Decimal) {
             viewModel.onTemperaturaChange(it)
         }
 
@@ -115,7 +120,7 @@ fun TecnicoMedicionScreen(
 
         BotonPrincipalInduztek(
             texto = "GUARDAR MEDICIÓN EN TERRENO",
-            onClick = { viewModel.guardarMedicion() }
+            onClick = { viewModel.guardarMedicionConContexto(contexto) }
         )
     }
 }
@@ -126,11 +131,19 @@ private fun CampoMedicion(
     valor: String,
     unidad: String,
     esAlerta: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Number,
     onCambio: (String) -> Unit
 ) {
     OutlinedTextField(
         value = valor,
-        onValueChange = onCambio,
+        onValueChange = { nuevoValor ->
+            val filtrado = when (keyboardType) {
+                KeyboardType.Number -> nuevoValor.filter { it.isDigit() }
+                KeyboardType.Decimal -> nuevoValor.filter { it.isDigit() || it == '.' }
+                else -> nuevoValor
+            }
+            onCambio(filtrado)
+        },
         label = { Text(label, color = TextoSecundario) },
         suffix = { Text(unidad, fontWeight = FontWeight.Bold, color = TextoOscuro) },
         trailingIcon = {
@@ -142,7 +155,8 @@ private fun CampoMedicion(
         },
         singleLine = true,
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
     )
 }
 

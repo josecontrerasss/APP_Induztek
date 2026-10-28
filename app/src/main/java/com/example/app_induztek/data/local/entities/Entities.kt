@@ -119,7 +119,8 @@ data class ProtocoloEntity(
     val observaciones: String = "",
     val estado: String = "REGISTRADO_TERRENO",
     val resultado: String = "APROBADO",
-    val sincronizado: Boolean = false
+    val sincronizado: Boolean = false,
+    val fotoPath: String? = null
 )
 
 
