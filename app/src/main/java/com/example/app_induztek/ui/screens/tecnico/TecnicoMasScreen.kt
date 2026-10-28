@@ -44,7 +44,6 @@ fun TecnicoMasScreen(viewModel: InduztekViewModel) {
     val protocolos by viewModel.todosLosProtocolos.collectAsStateWithLifecycle()
     val todasLasMediciones by viewModel.todasLasMediciones.collectAsStateWithLifecycle()
     val formState by viewModel.formState.collectAsStateWithLifecycle()
-    // Eliminamos la dependencia de ultimaFotoCapturada porque ahora usamos Room (fotoPath)
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
