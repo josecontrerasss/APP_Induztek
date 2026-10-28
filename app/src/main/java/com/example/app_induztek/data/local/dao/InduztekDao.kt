@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface InduztekDao {
 
-    // --- INSTALACIONES ---
+
     @Query("SELECT * FROM instalaciones ORDER BY id_instalacion ASC")
     fun getAllInstalaciones(): Flow<List<InstalacionEntity>>
 
@@ -31,7 +31,7 @@ interface InduztekDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertInstalaciones(instalaciones: List<InstalacionEntity>): List<Long>
 
-    // --- EQUIPOS ---
+
     @Query("SELECT * FROM equipos WHERE id_instalacion = :instalacionId ORDER BY tag ASC")
     fun getEquiposByInstalacion(instalacionId: Int): Flow<List<EquipoEntity>>
 
@@ -44,7 +44,7 @@ interface InduztekDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertEquipos(equipos: List<EquipoEntity>): List<Long>
 
-    // --- PROTOCOLOS ---
+
     @Query("SELECT * FROM protocolos ORDER BY id_protocolo DESC")
     fun getAllProtocolos(): Flow<List<ProtocoloEntity>>
 
@@ -76,7 +76,6 @@ interface InduztekDao {
     @Query("UPDATE protocolos SET sincronizado = 1 WHERE sincronizado = 0")
     fun sincronizarTodos(): Int
 
-    // --- MEDICIONES ---
     @Query("SELECT * FROM mediciones WHERE id_protocolo = :protocoloId ORDER BY id_medicion ASC")
     fun getMedicionesByProtocolo(protocoloId: Int): Flow<List<MedicionEntity>>
 
@@ -89,7 +88,7 @@ interface InduztekDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMediciones(mediciones: List<MedicionEntity>): List<Long>
 
-    // --- USUARIOS Y ROLES ---
+
     @Query("SELECT * FROM usuarios WHERE LOWER(correo) = LOWER(:correo) AND password_hash = :password LIMIT 1")
     fun login(correo: String, password: String): UsuarioEntity?
 
