@@ -268,19 +268,30 @@ class InduztekViewModel(
 
     fun guardarMedicionConContexto(context: Context) {
         viewModelScope.launch {
+            val estadoActual = _formState.value
+
+            if (estadoActual.tensionPrimario.isBlank() ||
+                estadoActual.tensionSecundario.isBlank() ||
+                estadoActual.corriente.isBlank() ||
+                estadoActual.resistenciaAislamiento.isBlank() ||
+                estadoActual.temperaturaAceite.isBlank()) {
+                _userMessage.value = "Error: Complete todos los campos de medición antes de guardar."
+                return@launch
+            }
+
             val equipoId = _selectedEquipoId.value ?: 1
             val timeMillis = System.currentTimeMillis()
             val numeroProtocolo = "PT-2026-$timeMillis"
             val now = SimpleDateFormat("dd MMM. yyyy, HH:mm", Locale("es", "CL")).format(Date())
-            val tempVal = _formState.value.temperaturaAceite.toDoubleOrNull() ?: 25.0
+            val tempVal = estadoActual.temperaturaAceite.toDoubleOrNull() ?: 25.0
 
-            val obsConUbicacion = if (_formState.value.latitud.isNotBlank()) {
-                "${_formState.value.observaciones} [GPS: ${_formState.value.latitud}, ${_formState.value.longitud}]"
+            val obsConUbicacion = if (estadoActual.latitud.isNotBlank()) {
+                "${estadoActual.observaciones} [GPS: ${estadoActual.latitud}, ${estadoActual.longitud}]"
             } else {
-                _formState.value.observaciones
+                estadoActual.observaciones
             }
 
-            val pathFoto = _formState.value.fotoBitmap?.let { bitmap ->
+            val pathFoto = estadoActual.fotoBitmap?.let { bitmap ->
                 guardarBitmapInterno(context, bitmap, "foto_$timeMillis.jpg")
             }
 
@@ -296,17 +307,17 @@ class InduztekViewModel(
                 descripcion_mantenimiento = "Mediciones eléctricas de control en terreno.",
                 observaciones = obsConUbicacion,
                 estado = "REGISTRADO_TERRENO",
-                resultado = if (_formState.value.isTemperaturaAlerta) "OBSERVADO" else "APROBADO",
+                resultado = if (estadoActual.isTemperaturaAlerta) "OBSERVADO" else "APROBADO",
                 sincronizado = false,
                 fotoPath = pathFoto ?: ""
             )
 
             val mediciones = listOf(
-                MedicionEntity(0, 0, "V_PRIM", "Tensión Primario", _formState.value.tensionPrimario, "V", if (_formState.value.isTensionPrimarioOk) "OK" else "ALERTA"),
-                MedicionEntity(0, 0, "V_SEC", "Tensión Secundario", _formState.value.tensionSecundario, "V", if (_formState.value.isTensionSecundarioOk) "OK" else "ALERTA"),
-                MedicionEntity(0, 0, "I_NOM", "Corriente", _formState.value.corriente, "A", if (_formState.value.isCorrienteOk) "OK" else "ALERTA"),
-                MedicionEntity(0, 0, "R_AISL", "Resistencia Aislamiento", _formState.value.resistenciaAislamiento, "MΩ", if (_formState.value.isResistenciaOk) "OK" else "ALERTA"),
-                MedicionEntity(0, 0, "T_ACEITE", "Temperatura Aceite", _formState.value.temperaturaAceite, "°C", if (_formState.value.isTemperaturaAlerta) "ALERTA" else "OK")
+                MedicionEntity(0, 0, "V_PRIM", "Tensión Primario", estadoActual.tensionPrimario, "V", if (estadoActual.isTensionPrimarioOk) "OK" else "ALERTA"),
+                MedicionEntity(0, 0, "V_SEC", "Tensión Secundario", estadoActual.tensionSecundario, "V", if (estadoActual.isTensionSecundarioOk) "OK" else "ALERTA"),
+                MedicionEntity(0, 0, "I_NOM", "Corriente", estadoActual.corriente, "A", if (estadoActual.isCorrienteOk) "OK" else "ALERTA"),
+                MedicionEntity(0, 0, "R_AISL", "Resistencia Aislamiento", estadoActual.resistenciaAislamiento, "MΩ", if (estadoActual.isResistenciaOk) "OK" else "ALERTA"),
+                MedicionEntity(0, 0, "T_ACEITE", "Temperatura Aceite", estadoActual.temperaturaAceite, "°C", if (estadoActual.isTemperaturaAlerta) "ALERTA" else "OK")
             )
 
             repository.guardarMedicionEnTerreno(nuevoProtocolo, mediciones)
