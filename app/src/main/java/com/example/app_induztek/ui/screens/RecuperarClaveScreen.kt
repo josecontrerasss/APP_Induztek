@@ -35,17 +35,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
 import com.example.app_induztek.ui.components.CampoTextoInduztek
-import com.example.app_induztek.ui.viewmodel.RecuperarClaveViewModel
+import com.example.app_induztek.ui.viewmodel.LoginViewModel
 
 private val ColorExito = Color(0xFF2E7D32)
 private val ColorAmbar = Color(0xFFB26A00)
 
 @Composable
 fun RecuperarClaveScreen(
-    viewModel: RecuperarClaveViewModel,
+    viewModel: LoginViewModel,
     onVolver: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.recuperarState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -90,27 +90,12 @@ fun RecuperarClaveScreen(
 
             CampoTextoInduztek(
                 valor = uiState.correo,
-                onValorCambia = { viewModel.onCorreoChange(it) },
+                onValorCambia = { viewModel.onRecuperarCorreoChange(it) },
                 etiqueta = "Correo electrónico",
                 icono = Icons.Default.Email,
                 tipoTeclado = KeyboardType.Email,
                 error = uiState.correoError
             )
-
-            AnimatedVisibility(
-                visible = uiState.correoError != null,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Text(
-                    text = uiState.correoError.orEmpty(),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 6.dp)
-                )
-            }
 
             AnimatedVisibility(
                 visible = uiState.mensaje != null,
@@ -119,7 +104,7 @@ fun RecuperarClaveScreen(
             ) {
                 val mensaje = uiState.mensaje.orEmpty()
                 val esServicioNoDisponible = !uiState.exito &&
-                    mensaje == RecuperarClaveViewModel.MENSAJE_SERVICIO_NO_DISPONIBLE
+                    mensaje == LoginViewModel.MENSAJE_SERVICIO_NO_DISPONIBLE
                 val colorFondo = when {
                     uiState.exito -> ColorExito.copy(alpha = 0.12f)
                     esServicioNoDisponible -> ColorAmbar.copy(alpha = 0.14f)
@@ -170,14 +155,14 @@ fun RecuperarClaveScreen(
             BotonPrincipalInduztek(
                 texto = "Enviar enlace",
                 cargando = uiState.enviando,
-                onClick = { viewModel.enviar() }
+                onClick = { viewModel.enviarRecuperacion() }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
                 onClick = {
-                    viewModel.reiniciar()
+                    viewModel.reiniciarRecuperacion()
                     onVolver()
                 }
             ) {

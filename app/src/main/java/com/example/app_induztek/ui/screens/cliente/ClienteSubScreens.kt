@@ -36,7 +36,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,6 +58,12 @@ import com.example.app_induztek.ui.viewmodel.PerfilEditState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.app_induztek.ui.viewmodel.AppViewModelProvider
 import com.example.app_induztek.ui.viewmodel.PerfilViewModel
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import com.example.app_induztek.ui.components.CampoTextoInduztek
 
 private val VerdeInduztek = Color(0xFF1B5E20)
 
@@ -338,75 +343,70 @@ private fun PerfilModoEdicion(
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        OutlinedTextField(
-            value = perfilEdit.nombre,
-            onValueChange = { viewModel.onPerfilNombreChange(it) },
-            label = { Text("Razón social") },
-            enabled = habilitado,
-            isError = perfilEdit.nombreError != null,
-            supportingText = perfilEdit.nombreError?.let { error ->
-                { Text(error, color = MaterialTheme.colorScheme.error) }
-            },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+        CampoTextoInduztek(
+            valor = perfilEdit.nombre,
+            onValorCambia = { viewModel.onPerfilNombreChange(it) },
+            etiqueta = "Razón social",
+            icono = Icons.Default.Business,
+            modifier = Modifier.fillMaxWidth(),
+            error = perfilEdit.nombreError,
+            habilitado = habilitado,
+            imeAction = ImeAction.Next
         )
 
-        OutlinedTextField(
-            value = perfilEdit.correo,
-            onValueChange = { viewModel.onPerfilCorreoChange(it) },
-            label = { Text("Correo") },
-            enabled = habilitado,
-            isError = perfilEdit.correoError != null,
-            supportingText = {
-                val error = perfilEdit.correoError
-                if (error != null) {
-                    Text(error, color = MaterialTheme.colorScheme.error)
-                } else {
-                    Text("Este correo también es tu usuario para iniciar sesión.")
-                }
-            },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+        CampoTextoInduztek(
+            valor = perfilEdit.correo,
+            onValorCambia = { viewModel.onPerfilCorreoChange(it) },
+            etiqueta = "Correo",
+            icono = Icons.Default.Email,
+            modifier = Modifier.fillMaxWidth(),
+            tipoTeclado = KeyboardType.Email,
+            error = perfilEdit.correoError,
+            ayuda = "Este correo también es tu usuario para iniciar sesión.",
+            habilitado = habilitado,
+            imeAction = ImeAction.Next
         )
 
-        OutlinedTextField(
-            value = perfilEdit.telefono,
-            onValueChange = { viewModel.onPerfilTelefonoChange(it) },
-            label = { Text("Teléfono") },
-            enabled = habilitado,
-            isError = perfilEdit.telefonoError != null,
-            supportingText = perfilEdit.telefonoError?.let { error ->
-                { Text(error, color = MaterialTheme.colorScheme.error) }
-            },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+        CampoTextoInduztek(
+            valor = perfilEdit.telefono,
+            onValorCambia = { viewModel.onPerfilTelefonoChange(it) },
+            etiqueta = "Teléfono",
+            icono = Icons.Default.Phone,
+            modifier = Modifier.fillMaxWidth(),
+            tipoTeclado = KeyboardType.Phone,
+            error = perfilEdit.telefonoError,
+            habilitado = habilitado,
+            imeAction = ImeAction.Next
         )
 
-        OutlinedTextField(
-            value = perfilEdit.giro,
-            onValueChange = { viewModel.onPerfilGiroChange(it) },
-            label = { Text("Giro") },
-            enabled = habilitado,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+        CampoTextoInduztek(
+            valor = perfilEdit.giro,
+            onValorCambia = { viewModel.onPerfilGiroChange(it) },
+            etiqueta = "Giro",
+            icono = Icons.Default.Work,
+            modifier = Modifier.fillMaxWidth(),
+            habilitado = habilitado,
+            imeAction = ImeAction.Next
         )
 
-        OutlinedTextField(
-            value = perfilEdit.contactoNombre,
-            onValueChange = { viewModel.onPerfilContactoNombreChange(it) },
-            label = { Text("Nombre del contacto") },
-            enabled = habilitado,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+        CampoTextoInduztek(
+            valor = perfilEdit.contactoNombre,
+            onValorCambia = { viewModel.onPerfilContactoNombreChange(it) },
+            etiqueta = "Nombre del contacto",
+            icono = Icons.Default.Person,
+            modifier = Modifier.fillMaxWidth(),
+            habilitado = habilitado,
+            imeAction = ImeAction.Next
         )
 
-        OutlinedTextField(
-            value = perfilEdit.contactoCargo,
-            onValueChange = { viewModel.onPerfilContactoCargoChange(it) },
-            label = { Text("Cargo del contacto") },
-            enabled = habilitado,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+        CampoTextoInduztek(
+            valor = perfilEdit.contactoCargo,
+            onValorCambia = { viewModel.onPerfilContactoCargoChange(it) },
+            etiqueta = "Cargo del contacto",
+            icono = Icons.Default.Badge,
+            modifier = Modifier.fillMaxWidth(),
+            habilitado = habilitado,
+            imeAction = ImeAction.Done
         )
 
         val rut = perfil?.rut?.ifBlank { null } ?: "No informado"

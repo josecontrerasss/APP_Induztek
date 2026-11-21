@@ -40,7 +40,6 @@ import com.example.app_induztek.ui.theme.MiRegistroTheme
 import com.example.app_induztek.ui.viewmodel.ClienteTab
 import com.example.app_induztek.ui.viewmodel.AppViewModelProvider
 import com.example.app_induztek.ui.viewmodel.LoginViewModel
-import com.example.app_induztek.ui.viewmodel.RecuperarClaveViewModel
 import com.example.app_induztek.ui.viewmodel.RegistroViewModel
 import com.example.app_induztek.ui.viewmodel.ClienteViewModel
 import com.example.app_induztek.ui.viewmodel.MedicionViewModel
@@ -70,8 +69,7 @@ enum class AuthDestino { LOGIN, REGISTRO, RECUPERAR }
 @Composable
 fun MainNavigationRoot(
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    registroViewModel: RegistroViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    recuperarClaveViewModel: RecuperarClaveViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    registroViewModel: RegistroViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val currentUser by loginViewModel.currentUser.collectAsStateWithLifecycle()
     var destino by remember { mutableStateOf(AuthDestino.LOGIN) }
@@ -97,11 +95,11 @@ fun MainNavigationRoot(
             }
             pantalla == AuthDestino.RECUPERAR -> {
                 BackHandler {
-                    recuperarClaveViewModel.reiniciar()
+                    loginViewModel.reiniciarRecuperacion()
                     destino = AuthDestino.LOGIN
                 }
                 RecuperarClaveScreen(
-                    viewModel = recuperarClaveViewModel,
+                    viewModel = loginViewModel,
                     onVolver = { destino = AuthDestino.LOGIN }
                 )
             }
@@ -126,9 +124,10 @@ fun InduztekApp(
     val currentRole by shellViewModel.currentRole.collectAsStateWithLifecycle()
     val tecnicoTab by shellViewModel.tecnicoTab.collectAsStateWithLifecycle()
     val clienteTab by shellViewModel.clienteTab.collectAsStateWithLifecycle()
-    val pendientesSyncCount by shellViewModel.pendientesSyncCount.collectAsStateWithLifecycle()
+    val pendientesSyncCount by tecnicoViewModel.pendientesSyncCount.collectAsStateWithLifecycle()
     val selectedProtocoloDetalle by clienteViewModel.selectedProtocoloDetalle.collectAsStateWithLifecycle()
     val userMessage by shellViewModel.userMessage.collectAsStateWithLifecycle()
+    val confirmacion by shellViewModel.confirmacion.collectAsStateWithLifecycle()
 
     CertificadoEffect(viewModel = clienteViewModel)
 
@@ -177,7 +176,7 @@ fun InduztekApp(
                 userName = user.nombre,
                 title = topBarTitle,
                 pendientesSyncCount = pendientesSyncCount,
-                onSyncClick = { shellViewModel.sincronizarProtocolos() },
+                onSyncClick = { tecnicoViewModel.sincronizarProtocolos() },
                 onNotificationsClick = {
                     scope.launch {
                         snackbarHostState.showSnackbar("No hay alertas críticas pendientes.")
@@ -230,6 +229,8 @@ fun InduztekApp(
                             )
                             TecnicoTab.MEDICIONES -> TecnicoMedicionScreen(
                                 viewModel = medicionViewModel,
+                                pendientes = pendientesSyncCount,
+                                onSincronizar = { tecnicoViewModel.sincronizarProtocolos() },
                                 onLogout = { shellViewModel.cerrarSesion() }
                             )
                             TecnicoTab.EQUIPOS -> TecnicoEquiposScreen(viewModel = tecnicoViewModel)
@@ -255,6 +256,11 @@ fun InduztekApp(
                     onDismiss = { clienteViewModel.cerrarDetalleProtocolo() }
                 )
             }
+
+            ConfirmacionAnimada(
+                mensaje = confirmacion,
+                onTerminar = { shellViewModel.limpiarConfirmacion() }
+            )
         }
     }
 }

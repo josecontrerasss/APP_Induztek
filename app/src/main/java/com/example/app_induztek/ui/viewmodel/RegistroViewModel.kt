@@ -47,17 +47,9 @@ class RegistroViewModel(
     fun registrarCliente() {
         if (_uiState.value.enviando) return
         val estado = calcularErrores(_uiState.value).copy(intentoEnviar = true)
-        val nombreValido = estado.nombre.isNotBlank()
-        val contrasenaValida = estado.requisitos.valida
-        if (estado.rutError != null || !nombreValido || estado.correoError != null ||
-            estado.telefonoError != null || !contrasenaValida || estado.confirmarError != null) {
-            _uiState.value = estado.copy(
-                mensajeError = when {
-                    !nombreValido -> "El nombre o razón social es obligatorio"
-                    !contrasenaValida -> "La contraseña no cumple todos los requisitos de seguridad"
-                    else -> null
-                }
-            )
+        if (estado.rutError != null || estado.nombreError != null || estado.correoError != null ||
+            estado.telefonoError != null || estado.contrasenaError != null || estado.confirmarError != null) {
+            _uiState.value = estado.copy(mensajeError = null)
             return
         }
         viewModelScope.launch {
@@ -106,8 +98,10 @@ class RegistroViewModel(
     private fun calcularErrores(estado: RegistroUiState): RegistroUiState {
         return estado.copy(
             rutError = if (RutValidator.esValido(estado.rut.trim())) null else "RUT inválido",
+            nombreError = if (estado.nombre.isBlank()) "El nombre o razón social es obligatorio" else null,
             correoError = if (Patterns.EMAIL_ADDRESS.matcher(estado.correo.trim()).matches()) null else "Correo electrónico inválido",
             telefonoError = validarTelefono(estado.telefono),
+            contrasenaError = if (PasswordPolicy.evaluar(estado.contrasena).valida) null else "La contraseña no cumple los requisitos de seguridad",
             confirmarError = if (estado.confirmarContrasena.isNotEmpty() && estado.confirmarContrasena == estado.contrasena) null else "Las contraseñas no coinciden",
             requisitos = PasswordPolicy.evaluar(estado.contrasena)
         )

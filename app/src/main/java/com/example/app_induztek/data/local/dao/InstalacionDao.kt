@@ -10,9 +10,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface InstalacionDao {
 
-    @Query("SELECT * FROM instalaciones ORDER BY id_instalacion ASC")
-    fun getAllInstalaciones(): Flow<List<InstalacionEntity>>
-
     @Query("SELECT * FROM instalaciones WHERE id_usuario_cliente = :clienteId ORDER BY id_instalacion ASC")
     fun getInstalacionesByCliente(clienteId: Int): Flow<List<InstalacionEntity>>
 

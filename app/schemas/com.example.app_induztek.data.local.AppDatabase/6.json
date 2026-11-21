@@ -1,0 +1,754 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "e7d5a6ed7b8d309fc8805ddb89795cd1",
+    "entities": [
+      {
+        "tableName": "roles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_rol` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `codigo` TEXT NOT NULL, `nombre` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id_rol",
+            "columnName": "id_rol",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigo",
+            "columnName": "codigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_rol"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_roles_codigo",
+            "unique": true,
+            "columnNames": [
+              "codigo"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_roles_codigo` ON `${TABLE_NAME}` (`codigo`)"
+          }
+        ]
+      },
+      {
+        "tableName": "usuarios",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_usuario` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id_rol` INTEGER NOT NULL, `rut` TEXT NOT NULL, `nombre` TEXT NOT NULL, `correo` TEXT NOT NULL, `telefono` TEXT NOT NULL, `password_hash` TEXT NOT NULL, `password_salt` TEXT NOT NULL, `activo` INTEGER NOT NULL, `giro` TEXT, `contacto_nombre` TEXT, `contacto_cargo` TEXT, FOREIGN KEY(`id_rol`) REFERENCES `roles`(`id_rol`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id_usuario",
+            "columnName": "id_usuario",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_rol",
+            "columnName": "id_rol",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rut",
+            "columnName": "rut",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "correo",
+            "columnName": "correo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefono",
+            "columnName": "telefono",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "password_hash",
+            "columnName": "password_hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "password_salt",
+            "columnName": "password_salt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "activo",
+            "columnName": "activo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "giro",
+            "columnName": "giro",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "contacto_nombre",
+            "columnName": "contacto_nombre",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "contacto_cargo",
+            "columnName": "contacto_cargo",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_usuario"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_usuarios_rut",
+            "unique": true,
+            "columnNames": [
+              "rut"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_usuarios_rut` ON `${TABLE_NAME}` (`rut`)"
+          },
+          {
+            "name": "index_usuarios_correo",
+            "unique": true,
+            "columnNames": [
+              "correo"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_usuarios_correo` ON `${TABLE_NAME}` (`correo`)"
+          },
+          {
+            "name": "index_usuarios_id_rol",
+            "unique": false,
+            "columnNames": [
+              "id_rol"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_usuarios_id_rol` ON `${TABLE_NAME}` (`id_rol`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "roles",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_rol"
+            ],
+            "referencedColumns": [
+              "id_rol"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "instalaciones",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_instalacion` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id_usuario_cliente` INTEGER NOT NULL, `codigo` TEXT NOT NULL, `nombre` TEXT NOT NULL, `ubicacion` TEXT NOT NULL, `observaciones_acceso` TEXT NOT NULL, `ultima_actividad` TEXT NOT NULL, FOREIGN KEY(`id_usuario_cliente`) REFERENCES `usuarios`(`id_usuario`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id_instalacion",
+            "columnName": "id_instalacion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_usuario_cliente",
+            "columnName": "id_usuario_cliente",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigo",
+            "columnName": "codigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ubicacion",
+            "columnName": "ubicacion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observaciones_acceso",
+            "columnName": "observaciones_acceso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ultima_actividad",
+            "columnName": "ultima_actividad",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_instalacion"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_instalaciones_id_usuario_cliente",
+            "unique": false,
+            "columnNames": [
+              "id_usuario_cliente"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_instalaciones_id_usuario_cliente` ON `${TABLE_NAME}` (`id_usuario_cliente`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "usuarios",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_usuario_cliente"
+            ],
+            "referencedColumns": [
+              "id_usuario"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "tipos_equipo",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_tipo_equipo` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nombre` TEXT NOT NULL, `clasificacion` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id_tipo_equipo",
+            "columnName": "id_tipo_equipo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clasificacion",
+            "columnName": "clasificacion",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_tipo_equipo"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tipos_equipo_nombre",
+            "unique": true,
+            "columnNames": [
+              "nombre"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_tipos_equipo_nombre` ON `${TABLE_NAME}` (`nombre`)"
+          }
+        ]
+      },
+      {
+        "tableName": "equipos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_equipo` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id_instalacion` INTEGER NOT NULL, `tag` TEXT NOT NULL, `id_tipo_equipo` INTEGER NOT NULL, `marca` TEXT NOT NULL, `modelo` TEXT NOT NULL, `numero_serie` TEXT NOT NULL, `anio_fabricacion` INTEGER NOT NULL, `potencia_kva` REAL NOT NULL, `tension_primaria_kv` REAL NOT NULL, `tension_secundaria_kv` REAL NOT NULL, `corriente_nominal_a` REAL NOT NULL, `observaciones` TEXT NOT NULL, FOREIGN KEY(`id_instalacion`) REFERENCES `instalaciones`(`id_instalacion`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`id_tipo_equipo`) REFERENCES `tipos_equipo`(`id_tipo_equipo`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id_equipo",
+            "columnName": "id_equipo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_instalacion",
+            "columnName": "id_instalacion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tag",
+            "columnName": "tag",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_tipo_equipo",
+            "columnName": "id_tipo_equipo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "marca",
+            "columnName": "marca",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelo",
+            "columnName": "modelo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numero_serie",
+            "columnName": "numero_serie",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anio_fabricacion",
+            "columnName": "anio_fabricacion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "potencia_kva",
+            "columnName": "potencia_kva",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tension_primaria_kv",
+            "columnName": "tension_primaria_kv",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tension_secundaria_kv",
+            "columnName": "tension_secundaria_kv",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "corriente_nominal_a",
+            "columnName": "corriente_nominal_a",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observaciones",
+            "columnName": "observaciones",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_equipo"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_equipos_id_instalacion_tag",
+            "unique": true,
+            "columnNames": [
+              "id_instalacion",
+              "tag"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_equipos_id_instalacion_tag` ON `${TABLE_NAME}` (`id_instalacion`, `tag`)"
+          },
+          {
+            "name": "index_equipos_id_tipo_equipo",
+            "unique": false,
+            "columnNames": [
+              "id_tipo_equipo"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_equipos_id_tipo_equipo` ON `${TABLE_NAME}` (`id_tipo_equipo`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "instalaciones",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_instalacion"
+            ],
+            "referencedColumns": [
+              "id_instalacion"
+            ]
+          },
+          {
+            "table": "tipos_equipo",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_tipo_equipo"
+            ],
+            "referencedColumns": [
+              "id_tipo_equipo"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "visitas",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_visita` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `numero_ot` TEXT NOT NULL, `id_instalacion` INTEGER NOT NULL, `fecha` TEXT NOT NULL, `tipo_visita` TEXT NOT NULL, `id_ingeniero_cargo` INTEGER NOT NULL, `id_tecnico` INTEGER, FOREIGN KEY(`id_instalacion`) REFERENCES `instalaciones`(`id_instalacion`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`id_tecnico`) REFERENCES `usuarios`(`id_usuario`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "id_visita",
+            "columnName": "id_visita",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numero_ot",
+            "columnName": "numero_ot",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_instalacion",
+            "columnName": "id_instalacion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo_visita",
+            "columnName": "tipo_visita",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_ingeniero_cargo",
+            "columnName": "id_ingeniero_cargo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_tecnico",
+            "columnName": "id_tecnico",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_visita"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_visitas_numero_ot",
+            "unique": true,
+            "columnNames": [
+              "numero_ot"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_visitas_numero_ot` ON `${TABLE_NAME}` (`numero_ot`)"
+          },
+          {
+            "name": "index_visitas_id_instalacion",
+            "unique": false,
+            "columnNames": [
+              "id_instalacion"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_visitas_id_instalacion` ON `${TABLE_NAME}` (`id_instalacion`)"
+          },
+          {
+            "name": "index_visitas_id_tecnico",
+            "unique": false,
+            "columnNames": [
+              "id_tecnico"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_visitas_id_tecnico` ON `${TABLE_NAME}` (`id_tecnico`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "instalaciones",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_instalacion"
+            ],
+            "referencedColumns": [
+              "id_instalacion"
+            ]
+          },
+          {
+            "table": "usuarios",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_tecnico"
+            ],
+            "referencedColumns": [
+              "id_usuario"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "protocolos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_protocolo` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `numero` TEXT NOT NULL, `id_visita` INTEGER NOT NULL, `id_equipo` INTEGER NOT NULL, `id_usuario_registra` INTEGER NOT NULL, `fecha_hora_prueba` TEXT NOT NULL, `temperatura_c` REAL NOT NULL, `humedad_pct` REAL NOT NULL, `descripcion_mantenimiento` TEXT NOT NULL, `observaciones` TEXT NOT NULL, `estado` TEXT NOT NULL, `resultado` TEXT NOT NULL, `sincronizado` INTEGER NOT NULL, `fotoPath` TEXT, FOREIGN KEY(`id_visita`) REFERENCES `visitas`(`id_visita`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`id_equipo`) REFERENCES `equipos`(`id_equipo`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id_protocolo",
+            "columnName": "id_protocolo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numero",
+            "columnName": "numero",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_visita",
+            "columnName": "id_visita",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_equipo",
+            "columnName": "id_equipo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_usuario_registra",
+            "columnName": "id_usuario_registra",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha_hora_prueba",
+            "columnName": "fecha_hora_prueba",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "temperatura_c",
+            "columnName": "temperatura_c",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "humedad_pct",
+            "columnName": "humedad_pct",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descripcion_mantenimiento",
+            "columnName": "descripcion_mantenimiento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observaciones",
+            "columnName": "observaciones",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultado",
+            "columnName": "resultado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fotoPath",
+            "columnName": "fotoPath",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_protocolo"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_protocolos_numero",
+            "unique": true,
+            "columnNames": [
+              "numero"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_protocolos_numero` ON `${TABLE_NAME}` (`numero`)"
+          },
+          {
+            "name": "index_protocolos_id_equipo",
+            "unique": false,
+            "columnNames": [
+              "id_equipo"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_protocolos_id_equipo` ON `${TABLE_NAME}` (`id_equipo`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "visitas",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_visita"
+            ],
+            "referencedColumns": [
+              "id_visita"
+            ]
+          },
+          {
+            "table": "equipos",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_equipo"
+            ],
+            "referencedColumns": [
+              "id_equipo"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mediciones",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_medicion` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id_protocolo` INTEGER NOT NULL, `parametro_codigo` TEXT NOT NULL, `parametro_nombre` TEXT NOT NULL, `valor` TEXT NOT NULL, `unidad` TEXT NOT NULL, `estado_alerta` TEXT NOT NULL, FOREIGN KEY(`id_protocolo`) REFERENCES `protocolos`(`id_protocolo`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id_medicion",
+            "columnName": "id_medicion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id_protocolo",
+            "columnName": "id_protocolo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parametro_codigo",
+            "columnName": "parametro_codigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parametro_nombre",
+            "columnName": "parametro_nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valor",
+            "columnName": "valor",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unidad",
+            "columnName": "unidad",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado_alerta",
+            "columnName": "estado_alerta",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_medicion"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mediciones_id_protocolo",
+            "unique": false,
+            "columnNames": [
+              "id_protocolo"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mediciones_id_protocolo` ON `${TABLE_NAME}` (`id_protocolo`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "protocolos",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id_protocolo"
+            ],
+            "referencedColumns": [
+              "id_protocolo"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e7d5a6ed7b8d309fc8805ddb89795cd1')"
+    ]
+  }
+}

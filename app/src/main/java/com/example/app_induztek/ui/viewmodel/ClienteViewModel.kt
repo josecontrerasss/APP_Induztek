@@ -77,17 +77,11 @@ class ClienteViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val todasLasInstalaciones: StateFlow<List<InstalacionEntity>> = repository.todasLasInstalaciones
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val todosLosEquipos: StateFlow<List<EquipoEntity>> = repository.todosLosEquipos
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val todasLasMediciones: StateFlow<List<MedicionEntity>> = repository.todasLasMediciones
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     private val _selectedProtocoloDetalle = MutableStateFlow<ProtocoloEntity?>(null)
     val selectedProtocoloDetalle: StateFlow<ProtocoloEntity?> = _selectedProtocoloDetalle.asStateFlow()
+
+    private val _detalleProtocolo = MutableStateFlow<CertificadoData?>(null)
+    val detalleProtocolo: StateFlow<CertificadoData?> = _detalleProtocolo.asStateFlow()
 
     private val _instalacionSeleccionada = MutableStateFlow<InstalacionEntity?>(null)
     val instalacionSeleccionada: StateFlow<InstalacionEntity?> = _instalacionSeleccionada.asStateFlow()
@@ -116,6 +110,7 @@ class ClienteViewModel(
                 if (user == null) {
                     _instalacionSeleccionada.value = null
                     _selectedProtocoloDetalle.value = null
+                    _detalleProtocolo.value = null
                     _certificadoPendiente.value = null
                 }
             }
@@ -128,10 +123,27 @@ class ClienteViewModel(
 
     fun verDetalleProtocolo(protocolo: ProtocoloEntity) {
         _selectedProtocoloDetalle.value = protocolo
+        _detalleProtocolo.value = null
+        viewModelScope.launch {
+            _detalleProtocolo.value = cargarDatosProtocolo(protocolo)
+        }
     }
 
     fun cerrarDetalleProtocolo() {
         _selectedProtocoloDetalle.value = null
+        _detalleProtocolo.value = null
+    }
+
+    private suspend fun cargarDatosProtocolo(protocolo: ProtocoloEntity): CertificadoData {
+        val equipo = repository.getEquipoById(protocolo.id_equipo).first()
+        val instalacion = equipo?.let { repository.getInstalacionById(it.id_instalacion).first() }
+        return CertificadoData(
+            protocolo = protocolo,
+            equipo = equipo,
+            instalacion = instalacion,
+            mediciones = repository.getMedicionesByProtocolo(protocolo.id_protocolo).first(),
+            cliente = session.user.value
+        )
     }
 
     fun seleccionarInstalacion(i: InstalacionEntity) {
@@ -148,16 +160,7 @@ class ClienteViewModel(
             return
         }
         viewModelScope.launch {
-            val mediciones = repository.getMedicionesByProtocolo(protocolo.id_protocolo).first()
-            val equipo = todosLosEquipos.value.find { it.id_equipo == protocolo.id_equipo }
-            val instalacion = todasLasInstalaciones.value.find { it.id_instalacion == equipo?.id_instalacion }
-            _certificadoPendiente.value = CertificadoData(
-                protocolo = protocolo,
-                equipo = equipo,
-                instalacion = instalacion,
-                mediciones = mediciones,
-                cliente = session.user.value
-            )
+            _certificadoPendiente.value = cargarDatosProtocolo(protocolo)
         }
     }
 

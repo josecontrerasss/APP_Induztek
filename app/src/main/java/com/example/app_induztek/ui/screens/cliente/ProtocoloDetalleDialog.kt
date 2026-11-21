@@ -59,13 +59,11 @@ fun ProtocoloDetalleDialog(
     viewModel: ClienteViewModel,
     onDismiss: () -> Unit
 ) {
-    val mediciones by viewModel.todasLasMediciones.collectAsStateWithLifecycle()
-    val equipos by viewModel.todosLosEquipos.collectAsStateWithLifecycle()
-    val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
+    val detalle by viewModel.detalleProtocolo.collectAsStateWithLifecycle()
 
-    val equipo = equipos.find { it.id_equipo == protocolo.id_equipo }
-    val instalacion = instalaciones.find { it.id_instalacion == equipo?.id_instalacion }
-    val medicionesDelProtocolo = mediciones.filter { it.id_protocolo == protocolo.id_protocolo }
+    val equipo = detalle?.equipo
+    val instalacion = detalle?.instalacion
+    val medicionesDelProtocolo = detalle?.mediciones.orEmpty()
 
     val isFormalizado = protocolo.estado == "FORMALIZADO"
 

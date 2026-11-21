@@ -4,57 +4,47 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.R
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
 import com.example.app_induztek.ui.viewmodel.RegistroViewModel
+import com.example.app_induztek.ui.components.CampoContrasenaInduztek
+import com.example.app_induztek.ui.components.CampoTextoInduztek
+import com.example.app_induztek.ui.components.MensajeError
+import com.example.app_induztek.ui.components.RequisitoContrasena
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,7 +104,7 @@ fun RegistroClienteScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    CampoRegistroInduztek(
+                    CampoTextoInduztek(
                         valor = state.rut,
                         onValorCambia = { viewModel.onRutChange(it) },
                         etiqueta = stringResource(R.string.campo_rut),
@@ -125,18 +115,18 @@ fun RegistroClienteScreen(
                         habilitado = !state.enviando
                     )
 
-                    CampoRegistroInduztek(
+                    CampoTextoInduztek(
                         valor = state.nombre,
                         onValorCambia = { viewModel.onNombreChange(it) },
                         etiqueta = stringResource(R.string.campo_razon_social),
                         icono = Icons.Default.Business,
                         tipoTeclado = KeyboardType.Text,
                         imeAction = ImeAction.Next,
-                        error = null,
+                        error = if (state.intentoEnviar) state.nombreError else null,
                         habilitado = !state.enviando
                     )
 
-                    CampoRegistroInduztek(
+                    CampoTextoInduztek(
                         valor = state.correo,
                         onValorCambia = { viewModel.onCorreoChange(it) },
                         etiqueta = stringResource(R.string.campo_correo),
@@ -147,7 +137,7 @@ fun RegistroClienteScreen(
                         habilitado = !state.enviando
                     )
 
-                    CampoRegistroInduztek(
+                    CampoTextoInduztek(
                         valor = state.telefono,
                         onValorCambia = { viewModel.onTelefonoChange(it) },
                         etiqueta = stringResource(R.string.campo_telefono),
@@ -158,16 +148,16 @@ fun RegistroClienteScreen(
                         habilitado = !state.enviando
                     )
 
-                    CampoContrasenaRegistro(
+                    CampoContrasenaInduztek(
                         valor = state.contrasena,
                         onValorCambia = { viewModel.onContrasenaChange(it) },
                         etiqueta = stringResource(R.string.campo_contrasena),
-                        error = null,
+                        error = if (state.intentoEnviar) state.contrasenaError else null,
                         imeAction = ImeAction.Next,
                         habilitado = !state.enviando
                     )
 
-                    CampoContrasenaRegistro(
+                    CampoContrasenaInduztek(
                         valor = state.confirmarContrasena,
                         onValorCambia = { viewModel.onConfirmarContrasenaChange(it) },
                         etiqueta = "Repetir contraseña",
@@ -188,10 +178,8 @@ fun RegistroClienteScreen(
                     }
 
                     AnimatedVisibility(visible = state.mensajeError != null) {
-                        Text(
-                            text = state.mensajeError.orEmpty(),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
+                        MensajeError(
+                            texto = state.mensajeError.orEmpty(),
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -249,96 +237,5 @@ fun RegistroClienteScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun CampoRegistroInduztek(
-    valor: String,
-    onValorCambia: (String) -> Unit,
-    etiqueta: String,
-    icono: ImageVector,
-    tipoTeclado: KeyboardType,
-    imeAction: ImeAction,
-    error: String?,
-    habilitado: Boolean
-) {
-    OutlinedTextField(
-        value = valor,
-        onValueChange = onValorCambia,
-        modifier = Modifier.fillMaxWidth(),
-        enabled = habilitado,
-        singleLine = true,
-        label = { Text(text = etiqueta) },
-        leadingIcon = { Icon(imageVector = icono, contentDescription = null) },
-        isError = error != null,
-        supportingText = if (error != null) {
-            { Text(text = error) }
-        } else {
-            null
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = tipoTeclado, imeAction = imeAction)
-    )
-}
-
-@Composable
-private fun CampoContrasenaRegistro(
-    valor: String,
-    onValorCambia: (String) -> Unit,
-    etiqueta: String,
-    error: String?,
-    imeAction: ImeAction,
-    habilitado: Boolean
-) {
-    var visible by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = valor,
-        onValueChange = onValorCambia,
-        modifier = Modifier.fillMaxWidth(),
-        enabled = habilitado,
-        singleLine = true,
-        label = { Text(text = etiqueta) },
-        leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = null) },
-        trailingIcon = {
-            IconButton(onClick = { visible = !visible }) {
-                Icon(
-                    imageVector = if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                    contentDescription = if (visible) "Ocultar contraseña" else "Mostrar contraseña"
-                )
-            }
-        },
-        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction),
-        isError = error != null,
-        supportingText = if (error != null) {
-            { Text(text = error) }
-        } else {
-            null
-        }
-    )
-}
-
-@Composable
-private fun RequisitoContrasena(
-    cumple: Boolean,
-    texto: String
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = if (cumple) Icons.Default.CheckCircle else Icons.Default.Circle,
-            contentDescription = null,
-            tint = if (cumple) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = texto,
-            style = MaterialTheme.typography.bodySmall,
-            color = if (cumple) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

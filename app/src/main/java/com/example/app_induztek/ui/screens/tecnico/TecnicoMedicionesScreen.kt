@@ -81,13 +81,14 @@ import com.google.android.gms.location.LocationServices
 @Composable
 fun TecnicoMedicionScreen(
     viewModel: MedicionViewModel,
+    pendientes: Int,
+    onSincronizar: () -> Unit,
     onLogout: () -> Unit
 ) {
     val contexto = LocalContext.current
     val form by viewModel.formState.collectAsStateWithLifecycle()
     val instalaciones by viewModel.instalacionesAsignadas.collectAsStateWithLifecycle()
     val equipos by viewModel.equiposAsignados.collectAsStateWithLifecycle()
-    val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
     val selInstalacion by viewModel.selectedInstalacionId.collectAsStateWithLifecycle()
     val selEquipo by viewModel.selectedEquipoId.collectAsStateWithLifecycle()
 
@@ -154,7 +155,7 @@ fun TecnicoMedicionScreen(
                     fontSize = 13.sp
                 )
                 if (pendientes > 0) {
-                    TextButton(onClick = { viewModel.sincronizarProtocolos() }) {
+                    TextButton(onClick = onSincronizar) {
                         Text("Marcar como sincronizado", color = TextoOscuro)
                     }
                 }

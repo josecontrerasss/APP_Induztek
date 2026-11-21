@@ -49,10 +49,6 @@ class MedicionViewModel(
         .delUsuarioActual(emptyList()) { repository.getEquiposByTecnico(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val pendientesSyncCount: StateFlow<Int> = session
-        .delUsuarioActual(0) { repository.countPendientesByTecnico(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
     init {
         viewModelScope.launch {
             session.user.collectLatest { usuario ->
@@ -186,14 +182,6 @@ class MedicionViewModel(
         messages.show("No se pudo guardar la foto.")
     }
 
-    fun sincronizarProtocolos() {
-        val usuario = session.user.value ?: return
-        viewModelScope.launch {
-            repository.sincronizarProtocolos(usuario.id_usuario)
-            messages.show("Protocolos marcados como sincronizados (modo local).")
-        }
-    }
-
     fun guardarMedicion() {
         if (_formState.value.guardando) return
         viewModelScope.launch {
@@ -275,7 +263,7 @@ class MedicionViewModel(
                 )
 
                 repository.guardarMedicionEnTerreno(nuevoProtocolo, mediciones)
-                messages.show("¡Medición guardada en SQLite local! (Protocolo: $numeroProtocolo)")
+                messages.confirmar("Medición guardada\nProtocolo $numeroProtocolo")
                 exito = true
             } catch (e: Exception) {
                 messages.show("No se pudo guardar la medición. Intente nuevamente.")

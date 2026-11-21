@@ -1,20 +1,14 @@
 package com.example.app_induztek.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.app_induztek.data.local.entities.UsuarioEntity
-import com.example.app_induztek.data.repository.InduztekRepository
 import com.example.app_induztek.di.SessionManager
 import com.example.app_induztek.di.UserMessages
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class ShellViewModel(
-    private val repository: InduztekRepository,
     private val session: SessionManager,
     private val messages: UserMessages
 ) : ViewModel() {
@@ -31,9 +25,7 @@ class ShellViewModel(
 
     val userMessage: StateFlow<String?> = messages.message
 
-    val pendientesSyncCount: StateFlow<Int> = session
-        .delUsuarioActual(0) { repository.countPendientesByTecnico(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val confirmacion: StateFlow<String?> = messages.confirmacion
 
     fun setTecnicoTab(tab: TecnicoTab) {
         _tecnicoTab.value = tab
@@ -43,19 +35,15 @@ class ShellViewModel(
         _clienteTab.value = tab
     }
 
-    fun sincronizarProtocolos() {
-        val usuario = session.user.value ?: return
-        viewModelScope.launch {
-            repository.sincronizarProtocolos(usuario.id_usuario)
-            messages.show("¡Sincronización completada con éxito!")
-        }
-    }
-
     fun cerrarSesion() {
         session.logout()
     }
 
     fun clearUserMessage() {
         messages.clear()
+    }
+
+    fun limpiarConfirmacion() {
+        messages.limpiarConfirmacion()
     }
 }

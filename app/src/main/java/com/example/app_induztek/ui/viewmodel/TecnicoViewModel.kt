@@ -94,7 +94,7 @@ class TecnicoViewModel(
         val usuario = session.user.value ?: return
         viewModelScope.launch {
             repository.sincronizarProtocolos(usuario.id_usuario)
-            messages.show("¡Sincronización completada con éxito!")
+            messages.confirmar("Sincronización completada")
         }
     }
 }

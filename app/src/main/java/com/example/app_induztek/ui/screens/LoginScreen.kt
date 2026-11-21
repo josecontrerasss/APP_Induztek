@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,6 +35,7 @@ import com.example.app_induztek.R
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
 import com.example.app_induztek.ui.components.CampoContrasenaInduztek
 import com.example.app_induztek.ui.components.CampoTextoInduztek
+import com.example.app_induztek.ui.components.MensajeError
 import com.example.app_induztek.ui.viewmodel.LoginViewModel
 
 @Composable
@@ -96,7 +96,8 @@ fun LoginScreen(
                 onValorCambia = { viewModel.onLoginEmailChange(it) },
                 etiqueta = stringResource(R.string.campo_correo),
                 icono = Icons.Default.Email,
-                tipoTeclado = KeyboardType.Email
+                tipoTeclado = KeyboardType.Email,
+                error = uiState.emailError
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -105,7 +106,8 @@ fun LoginScreen(
                 valor = uiState.password,
                 onValorCambia = { viewModel.onLoginPasswordChange(it) },
                 etiqueta = stringResource(R.string.campo_contrasena),
-                icono = Icons.Default.Lock
+                icono = Icons.Default.Lock,
+                error = uiState.passwordError
             )
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
@@ -123,11 +125,8 @@ fun LoginScreen(
             }
 
             AnimatedVisibility(visible = uiState.error != null) {
-                Text(
-                    text = uiState.error.orEmpty(),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
+                MensajeError(
+                    texto = uiState.error.orEmpty(),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                 )
             }

@@ -20,9 +20,6 @@ interface EquipoDao {
     """)
     fun getEquiposByTecnico(tecnicoId: Int): Flow<List<EquipoEntity>>
 
-    @Query("SELECT * FROM equipos ORDER BY id_equipo ASC")
-    fun getAllEquipos(): Flow<List<EquipoEntity>>
-
     @Query("SELECT * FROM equipos WHERE id_equipo = :id LIMIT 1")
     fun getEquipoById(id: Int): Flow<EquipoEntity?>
 

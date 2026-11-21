@@ -116,7 +116,7 @@ class InduztekRepository(
         return ResultadoCambioClave.Exito
     }
 
-    val todasLasInstalaciones: Flow<List<InstalacionEntity>> = instalacionDao.getAllInstalaciones()
+    fun getInstalacionById(id: Int): Flow<InstalacionEntity?> = instalacionDao.getInstalacionById(id)
 
     fun getInstalacionesByTecnico(tecnicoId: Int): Flow<List<InstalacionEntity>> =
         instalacionDao.getInstalacionesByTecnico(tecnicoId)
@@ -137,7 +137,7 @@ class InduztekRepository(
         return instalacionDao.getInstalacionesByCliente(clienteId)
     }
 
-    val todosLosEquipos: Flow<List<EquipoEntity>> = equipoDao.getAllEquipos()
+    fun getEquipoById(id: Int): Flow<EquipoEntity?> = equipoDao.getEquipoById(id)
 
     fun getEquiposByInstalacion(instalacionId: Int): Flow<List<EquipoEntity>> {
         return equipoDao.getEquiposByInstalacion(instalacionId)
@@ -150,8 +150,6 @@ class InduztekRepository(
     fun getMedicionesByProtocolo(protocoloId: Int): Flow<List<MedicionEntity>> {
         return medicionDao.getMedicionesByProtocolo(protocoloId)
     }
-
-    val todasLasMediciones: Flow<List<MedicionEntity>> = medicionDao.getAllMediciones()
 
     suspend fun guardarMedicionEnTerreno(
         protocolo: ProtocoloEntity,
