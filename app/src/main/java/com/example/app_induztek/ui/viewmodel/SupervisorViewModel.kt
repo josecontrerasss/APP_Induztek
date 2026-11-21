@@ -46,18 +46,21 @@ class SupervisorViewModel(
 
     fun asignar() {
         val estado = _uiState.value
+        if (estado.guardando) return
         val cliente = estado.clientes.firstOrNull { it.idUsuario == estado.idClienteSeleccionado }
         val tecnico = estado.tecnicos.firstOrNull { it.idUsuario == estado.idTecnicoSeleccionado }
         if (cliente == null || tecnico == null) {
             _uiState.value = estado.copy(error = "Elige una empresa y un técnico")
             return
         }
+        messages.confirmar("Técnico asignado\n${tecnico.nombre} → ${cliente.nombre}")
     }
 
     fun eliminar(idAsignacion: Int) {
         _uiState.value = _uiState.value.copy(
             asignaciones = _uiState.value.asignaciones.filterNot { it.idAsignacion == idAsignacion }
         )
+        messages.confirmar("Asignación eliminada")
     }
 
     fun cerrarSesion() {
