@@ -15,7 +15,7 @@ data class RegistroRequestDto(
     val rut: String,
     val nombre: String,
     val correo: String,
-    val telefono: String,
+    val telefono: String?,
     val password: String,
     val giro: String? = null,
     val contactoNombre: String? = null,
@@ -26,26 +26,37 @@ data class RecuperarClaveRequestDto(
     val correo: String
 )
 
+data class RestablecerClaveRequestDto(
+    val correo: String,
+    val codigo: String,
+    val claveNueva: String
+)
+
+data class CambiarClaveRequestDto(
+    val claveActual: String,
+    val claveNueva: String
+)
+
 data class UsuarioDto(
     val idUsuario: Int,
     val idRol: Int,
     val rut: String,
     val nombre: String,
     val correo: String,
-    val telefono: String,
-    val activo: Boolean,
-    val giro: String? = null,
-    val contactoNombre: String? = null,
-    val contactoCargo: String? = null
+    val telefono: String?,
+    val activo: Boolean?,
+    val giro: String?,
+    val contactoNombre: String?,
+    val contactoCargo: String?
 )
 
 data class PerfilUpdateDto(
     val nombre: String,
     val correo: String,
-    val telefono: String,
-    val giro: String? = null,
-    val contactoNombre: String? = null,
-    val contactoCargo: String? = null
+    val telefono: String?,
+    val giro: String?,
+    val contactoNombre: String?,
+    val contactoCargo: String?
 )
 
 data class InstalacionDto(
@@ -54,8 +65,14 @@ data class InstalacionDto(
     val codigo: String,
     val nombre: String,
     val ubicacion: String,
-    val observacionesAcceso: String,
-    val ultimaActividad: String
+    val observacionesAcceso: String?,
+    val ultimaActividad: String?
+)
+
+data class TipoEquipoDto(
+    val id: Int,
+    val nombre: String,
+    val clasificacion: String
 )
 
 data class EquipoDto(
@@ -66,12 +83,21 @@ data class EquipoDto(
     val marca: String,
     val modelo: String,
     val numeroSerie: String,
-    val anioFabricacion: Int,
-    val potenciaKva: Double,
-    val tensionPrimariaKv: Double,
-    val tensionSecundariaKv: Double,
-    val corrienteNominalA: Double,
-    val observaciones: String
+    val anioFabricacion: Int?,
+    val potenciaKva: Double?,
+    val tensionPrimariaKv: Double?,
+    val tensionSecundariaKv: Double?,
+    val corrienteNominalA: Double?,
+    val observaciones: String?
+)
+
+data class VisitaDto(
+    val idVisita: Int,
+    val numeroOt: String,
+    val idInstalacion: Int,
+    val fecha: String,
+    val tipoVisita: String,
+    val idTecnico: Int?
 )
 
 data class ProtocoloDto(
@@ -81,14 +107,14 @@ data class ProtocoloDto(
     val idEquipo: Int,
     val idUsuarioRegistra: Int,
     val fechaHoraPrueba: String,
-    val temperaturaC: Double,
-    val humedadPct: Double,
-    val descripcionMantenimiento: String,
-    val observaciones: String,
-    val estado: String,
+    val temperaturaC: Double?,
+    val humedadPct: Double?,
+    val descripcionMantenimiento: String?,
+    val observaciones: String?,
+    val estado: String?,
     val resultado: String,
-    val sincronizado: Boolean,
-    val fotoPath: String? = null
+    val sincronizado: Boolean?,
+    val fotoPath: String?
 )
 
 data class MedicionDto(
@@ -98,14 +124,54 @@ data class MedicionDto(
     val parametroNombre: String,
     val valor: String,
     val unidad: String,
-    val estadoAlerta: String
+    val estadoAlerta: String?
 )
 
 data class ProtocoloSyncDto(
     val protocolo: ProtocoloDto,
-    val mediciones: List<MedicionDto>
+    val mediciones: List<MedicionDto>?
 )
 
 data class SyncResponseDto(
-    val sincronizados: Int
+    val sincronizados: Int,
+    val aceptados: List<String>?,
+    val rechazados: List<String>?
+)
+
+data class AsignacionDto(
+    val idAsignacion: Int,
+    val idCliente: Int,
+    val nombreCliente: String,
+    val idTecnico: Int,
+    val nombreTecnico: String,
+    val fechaAsignacion: String?
+)
+
+data class AsignacionCrearDto(
+    val idCliente: Int,
+    val nombreCliente: String,
+    val idTecnico: Int,
+    val nombreTecnico: String
+)
+
+data class InstalacionCrearDto(
+    val idCliente: Int,
+    val codigo: String,
+    val nombre: String,
+    val ubicacion: String,
+    val observacionesAcceso: String?
+)
+
+data class EquipoCrearDto(
+    val tag: String,
+    val idTipoEquipo: Int,
+    val marca: String,
+    val modelo: String,
+    val numeroSerie: String,
+    val anioFabricacion: Int?,
+    val potenciaKva: Double?,
+    val tensionPrimariaKv: Double?,
+    val tensionSecundariaKv: Double?,
+    val corrienteNominalA: Double?,
+    val observaciones: String?
 )
