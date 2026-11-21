@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
         ProtocoloEntity::class,
         MedicionEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -73,7 +73,7 @@ abstract class AppDatabase : RoomDatabase() {
         val roles = listOf(
             RolEntity(id_rol = 1, codigo = "TECNICO", nombre = "P-01 Técnico de terreno"),
             RolEntity(id_rol = 2, codigo = "INGENIERO", nombre = "P-02 Ingeniero de pruebas"),
-            RolEntity(id_rol = 3, codigo = "JEFE_TECNICO", nombre = "P-03 Jefe técnico"),
+            RolEntity(id_rol = 3, codigo = "SUPERVISOR", nombre = "P-03 Supervisor"),
             RolEntity(id_rol = 4, codigo = "CLIENTE", nombre = "P-04 Cliente: cuenta empresa")
         )
         rolDao().insertRoles(roles)
@@ -321,25 +321,31 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_6_7: Migration = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("UPDATE roles SET codigo = 'SUPERVISOR', nombre = 'P-03 Supervisor' WHERE id_rol = 3")
+            }
+        }
+
         val MIGRATION_5_6: Migration = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `visitas_new` (" +
-                        "`id_visita` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                        "`numero_ot` TEXT NOT NULL, " +
-                        "`id_instalacion` INTEGER NOT NULL, " +
-                        "`fecha` TEXT NOT NULL, " +
-                        "`tipo_visita` TEXT NOT NULL, " +
-                        "`id_ingeniero_cargo` INTEGER NOT NULL, " +
-                        "`id_tecnico` INTEGER, " +
-                        "FOREIGN KEY(`id_instalacion`) REFERENCES `instalaciones`(`id_instalacion`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
-                        "FOREIGN KEY(`id_tecnico`) REFERENCES `usuarios`(`id_usuario`) ON UPDATE NO ACTION ON DELETE SET NULL )"
+                            "`id_visita` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                            "`numero_ot` TEXT NOT NULL, " +
+                            "`id_instalacion` INTEGER NOT NULL, " +
+                            "`fecha` TEXT NOT NULL, " +
+                            "`tipo_visita` TEXT NOT NULL, " +
+                            "`id_ingeniero_cargo` INTEGER NOT NULL, " +
+                            "`id_tecnico` INTEGER, " +
+                            "FOREIGN KEY(`id_instalacion`) REFERENCES `instalaciones`(`id_instalacion`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                            "FOREIGN KEY(`id_tecnico`) REFERENCES `usuarios`(`id_usuario`) ON UPDATE NO ACTION ON DELETE SET NULL )"
                 )
                 db.execSQL(
                     "INSERT INTO `visitas_new` (`id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, `id_tecnico`) " +
-                        "SELECT `id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, " +
-                        "(SELECT u.`id_usuario` FROM `usuarios` u INNER JOIN `roles` r ON u.`id_rol` = r.`id_rol` WHERE r.`codigo` = 'TECNICO' ORDER BY u.`id_usuario` LIMIT 1) " +
-                        "FROM `visitas`"
+                            "SELECT `id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, " +
+                            "(SELECT u.`id_usuario` FROM `usuarios` u INNER JOIN `roles` r ON u.`id_rol` = r.`id_rol` WHERE r.`codigo` = 'TECNICO' ORDER BY u.`id_usuario` LIMIT 1) " +
+                            "FROM `visitas`"
                 )
                 db.execSQL("DROP TABLE `visitas`")
                 db.execSQL("ALTER TABLE `visitas_new` RENAME TO `visitas`")
@@ -357,7 +363,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "induztek_database.db"
                     )
-                        .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+                        .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                         .build()
                     INSTANCE = instance
                     scope.launch { instance.ensureSeeded() }
