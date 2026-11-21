@@ -10,28 +10,35 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.app_induztek.ui.viewmodel.InduztekViewModel
+import com.example.app_induztek.ui.viewmodel.TecnicoViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun TecnicoInicioScreen(
-    viewModel: InduztekViewModel,
+    viewModel: TecnicoViewModel,
     onNavigateToMediciones: () -> Unit
 ) {
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
     val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
+    val protocolos by viewModel.todosLosProtocolos.collectAsStateWithLifecycle()
 
-    val fechaActual = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("es", "ES")).format(Date())
+    val fechaActual = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("es", "CL")).format(Date())
+
+    val ultimoProtocolo = remember(protocolos) {
+        protocolos.maxByOrNull { it.id_protocolo }
+    }
 
     Column(
         modifier = Modifier
@@ -126,7 +133,67 @@ fun TecnicoInicioScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Última medición",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+
+        if (ultimoProtocolo == null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Analytics,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Aún no hay mediciones registradas",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Protocolo: ${ultimoProtocolo.numero}",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Fecha: ${ultimoProtocolo.fecha_hora_prueba}",
+                        fontSize = 13.sp,
+                        color = Color.DarkGray
+                    )
+                    Text(
+                        text = "Resultado: ${ultimoProtocolo.resultado}",
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (ultimoProtocolo.resultado == "APROBADO") Color(0xFF2E7D32) else Color(0xFFE65100)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "Acciones Rápidas",
@@ -147,4 +214,3 @@ fun TecnicoInicioScreen(
         }
     }
 }
-

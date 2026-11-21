@@ -46,7 +46,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.data.local.entities.ProtocoloEntity
-import com.example.app_induztek.ui.viewmodel.InduztekViewModel
+import com.example.app_induztek.ui.viewmodel.ClienteViewModel
 
 private val VerdeInduztek = Color(0xFF1B5E20)
 private val VerdeMedio = Color(0xFF2E7D32)
@@ -56,7 +56,7 @@ private val ContenedorAmbar = Color(0xFFFFE0B2)
 @Composable
 fun ProtocoloDetalleDialog(
     protocolo: ProtocoloEntity,
-    viewModel: InduztekViewModel,
+    viewModel: ClienteViewModel,
     onDismiss: () -> Unit
 ) {
     val mediciones by viewModel.todasLasMediciones.collectAsStateWithLifecycle()
@@ -129,7 +129,6 @@ fun ProtocoloDetalleDialog(
 
                 HorizontalDivider(color = DividerDefaults.color.copy(alpha = 0.5f))
 
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -164,7 +163,6 @@ fun ProtocoloDetalleDialog(
                     }
                 }
 
-
                 Card(
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(
@@ -184,7 +182,6 @@ fun ProtocoloDetalleDialog(
                     }
                 }
 
-                // Tabla de Parámetros de Mediciones Eléctricas
                 Text(
                     text = "RESULTADOS DE MEDICIÓN",
                     style = MaterialTheme.typography.labelLarge.copy(
@@ -239,7 +236,6 @@ fun ProtocoloDetalleDialog(
                     }
                 }
 
-
                 if (protocolo.observaciones.isNotBlank()) {
                     Text(
                         text = "Observaciones Técnicas",
@@ -261,10 +257,9 @@ fun ProtocoloDetalleDialog(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-
                 Button(
                     onClick = {
-                        viewModel.simularDescargaCertificado(protocolo)
+                        viewModel.descargarCertificado(protocolo)
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth(),

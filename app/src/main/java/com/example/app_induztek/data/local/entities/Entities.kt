@@ -5,14 +5,12 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-
 @Entity(tableName = "roles", indices = [Index(value = ["codigo"], unique = true)])
 data class RolEntity(
     @PrimaryKey(autoGenerate = true) val id_rol: Int = 0,
     val codigo: String,
     val nombre: String
 )
-
 
 @Entity(
     tableName = "usuarios",
@@ -27,12 +25,12 @@ data class UsuarioEntity(
     val correo: String,
     val telefono: String = "",
     val password_hash: String = "123",
+    val password_salt: String = "",
     val activo: Boolean = true,
     val giro: String? = null,
     val contacto_nombre: String? = null,
     val contacto_cargo: String? = null
 )
-
 
 @Entity(
     tableName = "instalaciones",
@@ -49,14 +47,12 @@ data class InstalacionEntity(
     val ultima_actividad: String = "15 may. 2026"
 )
 
-
 @Entity(tableName = "tipos_equipo", indices = [Index(value = ["nombre"], unique = true)])
 data class TipoEquipoEntity(
     @PrimaryKey(autoGenerate = true) val id_tipo_equipo: Int = 0,
     val nombre: String,
     val clasificacion: String
 )
-
 
 @Entity(
     tableName = "equipos",
@@ -82,7 +78,6 @@ data class EquipoEntity(
     val observaciones: String = ""
 )
 
-
 @Entity(
     tableName = "visitas",
     foreignKeys = [ForeignKey(entity = InstalacionEntity::class, parentColumns = ["id_instalacion"], childColumns = ["id_instalacion"], onDelete = ForeignKey.CASCADE)],
@@ -96,7 +91,6 @@ data class VisitaEntity(
     val tipo_visita: String = "PRUEBAS_Y_MANT",
     val id_ingeniero_cargo: Int = 3
 )
-
 
 @Entity(
     tableName = "protocolos",
@@ -122,7 +116,6 @@ data class ProtocoloEntity(
     val sincronizado: Boolean = false,
     val fotoPath: String? = null
 )
-
 
 @Entity(
     tableName = "mediciones",

@@ -5,7 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,20 +28,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.app_induztek.data.local.AppDatabase
 import com.example.app_induztek.data.local.entities.UsuarioEntity
-import com.example.app_induztek.data.repository.InduztekRepository
 import com.example.app_induztek.ui.components.*
 import com.example.app_induztek.ui.screens.LoginScreen
+import com.example.app_induztek.ui.screens.RecuperarClaveScreen
 import com.example.app_induztek.ui.screens.RegistroClienteScreen
 import com.example.app_induztek.ui.screens.cliente.*
 import com.example.app_induztek.ui.screens.tecnico.*
 import com.example.app_induztek.ui.theme.MiRegistroTheme
 import com.example.app_induztek.ui.viewmodel.ClienteTab
-import com.example.app_induztek.ui.viewmodel.InduztekViewModel
-import com.example.app_induztek.ui.viewmodel.InduztekViewModelFactory
+import com.example.app_induztek.ui.viewmodel.AppViewModelProvider
+import com.example.app_induztek.ui.viewmodel.LoginViewModel
+import com.example.app_induztek.ui.viewmodel.RecuperarClaveViewModel
+import com.example.app_induztek.ui.viewmodel.RegistroViewModel
+import com.example.app_induztek.ui.viewmodel.ClienteViewModel
+import com.example.app_induztek.ui.viewmodel.MedicionViewModel
+import com.example.app_induztek.ui.viewmodel.ShellViewModel
+import com.example.app_induztek.ui.viewmodel.TecnicoViewModel
 import com.example.app_induztek.ui.viewmodel.TecnicoTab
 import com.example.app_induztek.ui.viewmodel.UserRole
 import kotlinx.coroutines.launch
@@ -46,56 +56,81 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val database = AppDatabase.getDatabase(this, lifecycleScope)
-        val repository = InduztekRepository(database.induztekDao())
-        val viewModelFactory = InduztekViewModelFactory(repository)
-
         setContent {
 
             MiRegistroTheme {
-                val viewModel: InduztekViewModel = viewModel(factory = viewModelFactory)
-                MainNavigationRoot(viewModel = viewModel)
+                MainNavigationRoot()
             }
         }
     }
 }
 
-@Composable
-fun MainNavigationRoot(viewModel: InduztekViewModel) {
-    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
-    var mostrandoRegistro by remember { mutableStateOf(false) }
+enum class AuthDestino { LOGIN, REGISTRO, RECUPERAR }
 
-    Crossfade(targetState = Pair(currentUser, mostrandoRegistro), label = "AuthFlow") { (user, enRegistro) ->
+@Composable
+fun MainNavigationRoot(
+    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    registroViewModel: RegistroViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    recuperarClaveViewModel: RecuperarClaveViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val currentUser by loginViewModel.currentUser.collectAsStateWithLifecycle()
+    var destino by remember { mutableStateOf(AuthDestino.LOGIN) }
+
+    AnimatedContent(
+        targetState = currentUser to destino,
+        transitionSpec = {
+            val haciaAdelante = targetState.second.ordinal >= initialState.second.ordinal
+            val direccion = if (haciaAdelante) 1 else -1
+            (fadeIn(tween(250)) + slideInHorizontally(tween(300)) { ancho -> direccion * ancho / 4 }) togetherWith
+                (fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { ancho -> -direccion * ancho / 4 })
+        },
+        label = "AuthFlow"
+    ) { (user, pantalla) ->
         when {
-            user == null && enRegistro -> {
-                BackHandler { mostrandoRegistro = false }
+            user != null -> InduztekApp(user = user)
+            pantalla == AuthDestino.REGISTRO -> {
+                BackHandler { destino = AuthDestino.LOGIN }
                 RegistroClienteScreen(
-                    viewModel = viewModel,
-                    onVolver = { mostrandoRegistro = false }
+                    viewModel = registroViewModel,
+                    onVolver = { destino = AuthDestino.LOGIN }
                 )
             }
-            user == null -> {
-                LoginScreen(
-                    viewModel = viewModel,
-                    onLoginSuccess = {  },
-                    onNavigateToRegistro = { mostrandoRegistro = true }
+            pantalla == AuthDestino.RECUPERAR -> {
+                BackHandler {
+                    recuperarClaveViewModel.reiniciar()
+                    destino = AuthDestino.LOGIN
+                }
+                RecuperarClaveScreen(
+                    viewModel = recuperarClaveViewModel,
+                    onVolver = { destino = AuthDestino.LOGIN }
                 )
             }
-            else -> {
-                InduztekApp(viewModel = viewModel, user = user)
-            }
+            else -> LoginScreen(
+                viewModel = loginViewModel,
+                onLoginSuccess = { destino = AuthDestino.LOGIN },
+                onRegistroClick = { destino = AuthDestino.REGISTRO },
+                onRecuperarClick = { destino = AuthDestino.RECUPERAR }
+            )
         }
     }
 }
 
 @Composable
-fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
-    val currentRole by viewModel.currentRole.collectAsStateWithLifecycle()
-    val tecnicoTab by viewModel.tecnicoTab.collectAsStateWithLifecycle()
-    val clienteTab by viewModel.clienteTab.collectAsStateWithLifecycle()
-    val pendientesSyncCount by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
-    val selectedProtocoloDetalle by viewModel.selectedProtocoloDetalle.collectAsStateWithLifecycle()
-    val userMessage by viewModel.userMessage.collectAsStateWithLifecycle()
+fun InduztekApp(
+    user: UsuarioEntity,
+    shellViewModel: ShellViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    medicionViewModel: MedicionViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    tecnicoViewModel: TecnicoViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    clienteViewModel: ClienteViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val currentRole by shellViewModel.currentRole.collectAsStateWithLifecycle()
+    val tecnicoTab by shellViewModel.tecnicoTab.collectAsStateWithLifecycle()
+    val clienteTab by shellViewModel.clienteTab.collectAsStateWithLifecycle()
+    val pendientesSyncCount by shellViewModel.pendientesSyncCount.collectAsStateWithLifecycle()
+    val selectedProtocoloDetalle by clienteViewModel.selectedProtocoloDetalle.collectAsStateWithLifecycle()
+    val userMessage by shellViewModel.userMessage.collectAsStateWithLifecycle()
+
+    CertificadoEffect(viewModel = clienteViewModel)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -106,15 +141,15 @@ fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
                 message = msg,
                 duration = SnackbarDuration.Short
             )
-            viewModel.clearUserMessage()
+            shellViewModel.clearUserMessage()
         }
     }
 
     BackHandler(enabled = (currentRole == UserRole.TECNICO && tecnicoTab != TecnicoTab.MEDICIONES) || (currentRole == UserRole.CLIENTE && clienteTab != ClienteTab.INICIO)) {
         if (currentRole == UserRole.TECNICO) {
-            viewModel.setTecnicoTab(TecnicoTab.MEDICIONES)
+            shellViewModel.setTecnicoTab(TecnicoTab.MEDICIONES)
         } else {
-            viewModel.setClienteTab(ClienteTab.INICIO)
+            shellViewModel.setClienteTab(ClienteTab.INICIO)
         }
     }
 
@@ -142,13 +177,13 @@ fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
                 userName = user.nombre,
                 title = topBarTitle,
                 pendientesSyncCount = pendientesSyncCount,
-                onSyncClick = { viewModel.sincronizarProtocolos() },
+                onSyncClick = { shellViewModel.sincronizarProtocolos() },
                 onNotificationsClick = {
                     scope.launch {
                         snackbarHostState.showSnackbar("No hay alertas críticas pendientes.")
                     }
                 },
-                onLogoutClick = { viewModel.cerrarSesion() }
+                onLogoutClick = { shellViewModel.cerrarSesion() }
             )
         },
         bottomBar = {
@@ -157,13 +192,13 @@ fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
                     TecnicoBottomNav(
                         selectedTab = tecnicoTab,
                         pendientesSyncCount = pendientesSyncCount,
-                        onTabSelected = { viewModel.setTecnicoTab(it) }
+                        onTabSelected = { shellViewModel.setTecnicoTab(it) }
                     )
                 }
                 UserRole.CLIENTE -> {
                     ClienteBottomNav(
                         selectedTab = clienteTab,
-                        onTabSelected = { viewModel.setClienteTab(it) }
+                        onTabSelected = { shellViewModel.setClienteTab(it) }
                     )
                 }
             }
@@ -175,28 +210,40 @@ fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (currentRole) {
-                UserRole.TECNICO -> {
-                    when (tecnicoTab) {
-                        TecnicoTab.INICIO -> TecnicoInicioScreen(
-                            viewModel = viewModel,
-                            onNavigateToMediciones = { viewModel.setTecnicoTab(TecnicoTab.MEDICIONES) }
-                        )
-                        TecnicoTab.MEDICIONES -> TecnicoMedicionScreen(
-                            viewModel = viewModel,
-                            onLogout = { viewModel.cerrarSesion() }
-                        )
-                        TecnicoTab.EQUIPOS -> TecnicoEquiposScreen(viewModel = viewModel)
-                        TecnicoTab.SINCRONIZAR -> TecnicoSincronizacionScreen(viewModel = viewModel)
-                        TecnicoTab.MAS -> TecnicoMasScreen(viewModel = viewModel)
+            AnimatedContent(
+                targetState = Triple(currentRole, tecnicoTab, clienteTab),
+                transitionSpec = {
+                    val desde = if (initialState.first == UserRole.TECNICO) initialState.second.ordinal else initialState.third.ordinal
+                    val hacia = if (targetState.first == UserRole.TECNICO) targetState.second.ordinal else targetState.third.ordinal
+                    val direccion = if (hacia >= desde) 1 else -1
+                    (fadeIn(tween(220)) + slideInHorizontally(tween(260)) { ancho -> direccion * ancho / 6 }) togetherWith
+                        fadeOut(tween(160))
+                },
+                label = "Pestanas"
+            ) { (rol, tabTecnico, tabCliente) ->
+                when (rol) {
+                    UserRole.TECNICO -> {
+                        when (tabTecnico) {
+                            TecnicoTab.INICIO -> TecnicoInicioScreen(
+                                viewModel = tecnicoViewModel,
+                                onNavigateToMediciones = { shellViewModel.setTecnicoTab(TecnicoTab.MEDICIONES) }
+                            )
+                            TecnicoTab.MEDICIONES -> TecnicoMedicionScreen(
+                                viewModel = medicionViewModel,
+                                onLogout = { shellViewModel.cerrarSesion() }
+                            )
+                            TecnicoTab.EQUIPOS -> TecnicoEquiposScreen(viewModel = tecnicoViewModel)
+                            TecnicoTab.SINCRONIZAR -> TecnicoSincronizacionScreen(viewModel = tecnicoViewModel)
+                            TecnicoTab.MAS -> TecnicoMasScreen(viewModel = tecnicoViewModel)
+                        }
                     }
-                }
-                UserRole.CLIENTE -> {
-                    when (clienteTab) {
-                        ClienteTab.INICIO -> ClienteInstalacionesScreen(viewModel = viewModel)
-                        ClienteTab.PROTOCOLOS -> ClienteProtocolosScreen(viewModel = viewModel)
-                        ClienteTab.DESCARGAS -> ClienteDescargasScreen(viewModel = viewModel)
-                        ClienteTab.PERFIL -> ClientePerfilScreen(viewModel = viewModel)
+                    UserRole.CLIENTE -> {
+                        when (tabCliente) {
+                            ClienteTab.INICIO -> ClienteInstalacionesScreen(viewModel = clienteViewModel)
+                            ClienteTab.PROTOCOLOS -> ClienteProtocolosScreen(viewModel = clienteViewModel)
+                            ClienteTab.DESCARGAS -> ClienteDescargasScreen(viewModel = clienteViewModel)
+                            ClienteTab.PERFIL -> ClientePerfilScreen(viewModel = clienteViewModel)
+                        }
                     }
                 }
             }
@@ -204,8 +251,8 @@ fun InduztekApp(viewModel: InduztekViewModel, user: UsuarioEntity) {
             selectedProtocoloDetalle?.let { proto ->
                 ProtocoloDetalleDialog(
                     protocolo = proto,
-                    viewModel = viewModel,
-                    onDismiss = { viewModel.cerrarDetalleProtocolo() }
+                    viewModel = clienteViewModel,
+                    onDismiss = { clienteViewModel.cerrarDetalleProtocolo() }
                 )
             }
         }

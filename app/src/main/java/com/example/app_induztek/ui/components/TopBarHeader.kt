@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.app_induztek.ui.viewmodel.UserRole
 
-
 private val VerdeInduztek = Color(0xFF1B5E20)
 private val AlertaNaranja = Color(0xFFFB8C00)
 private val EstadoVerde = Color(0xFF4CAF50)
@@ -86,7 +85,6 @@ fun TopBarHeader(
                 )
             }
 
-
             if (currentRole == UserRole.TECNICO) {
                 IconButton(onClick = onSyncClick) {
                     if (pendientesSyncCount > 0) {
@@ -105,11 +103,9 @@ fun TopBarHeader(
                 }
             }
 
-
             IconButton(onClick = onNotificationsClick) {
                 Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = Color.White)
             }
-
 
             IconButton(onClick = onLogoutClick) {
                 Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar Sesión", tint = Color.White)

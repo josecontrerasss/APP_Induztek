@@ -1,0 +1,121 @@
+package com.example.app_induztek.ui.viewmodel
+
+import android.util.Patterns
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.app_induztek.data.local.entities.UsuarioEntity
+import com.example.app_induztek.data.repository.InduztekRepository
+import com.example.app_induztek.data.repository.ResultadoRegistro
+import com.example.app_induztek.security.PasswordPolicy
+import com.example.app_induztek.security.RutValidator
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+class RegistroViewModel(
+    private val repository: InduztekRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(RegistroUiState())
+    val uiState: StateFlow<RegistroUiState> = _uiState.asStateFlow()
+
+    fun onRutChange(valor: String) {
+        _uiState.value = calcularErrores(_uiState.value.copy(rut = valor, mensajeError = null))
+    }
+
+    fun onNombreChange(valor: String) {
+        _uiState.value = calcularErrores(_uiState.value.copy(nombre = valor, mensajeError = null))
+    }
+
+    fun onCorreoChange(valor: String) {
+        _uiState.value = calcularErrores(_uiState.value.copy(correo = valor, mensajeError = null))
+    }
+
+    fun onTelefonoChange(valor: String) {
+        _uiState.value = calcularErrores(_uiState.value.copy(telefono = valor, mensajeError = null))
+    }
+
+    fun onContrasenaChange(valor: String) {
+        _uiState.value = calcularErrores(_uiState.value.copy(contrasena = valor, mensajeError = null))
+    }
+
+    fun onConfirmarContrasenaChange(valor: String) {
+        _uiState.value = calcularErrores(_uiState.value.copy(confirmarContrasena = valor, mensajeError = null))
+    }
+
+    fun registrarCliente() {
+        if (_uiState.value.enviando) return
+        val estado = calcularErrores(_uiState.value).copy(intentoEnviar = true)
+        val nombreValido = estado.nombre.isNotBlank()
+        val contrasenaValida = estado.requisitos.valida
+        if (estado.rutError != null || !nombreValido || estado.correoError != null ||
+            estado.telefonoError != null || !contrasenaValida || estado.confirmarError != null) {
+            _uiState.value = estado.copy(
+                mensajeError = when {
+                    !nombreValido -> "El nombre o razón social es obligatorio"
+                    !contrasenaValida -> "La contraseña no cumple todos los requisitos de seguridad"
+                    else -> null
+                }
+            )
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = estado.copy(enviando = true, mensajeError = null)
+            val rolId = repository.getRolId("CLIENTE")
+            if (rolId == null) {
+                _uiState.value = estado.copy(enviando = false, mensajeError = "No existe el rol CLIENTE")
+                return@launch
+            }
+            val nuevoCliente = UsuarioEntity(
+                id_rol = rolId,
+                rut = estado.rut.trim(),
+                nombre = estado.nombre.trim(),
+                correo = estado.correo.trim(),
+                telefono = estado.telefono.trim()
+            )
+            when (val resultado = repository.registrarCliente(nuevoCliente, estado.contrasena)) {
+                is ResultadoRegistro.Exito -> {
+                    _uiState.value = estado.copy(
+                        enviando = false,
+                        registroExitoso = true,
+                        mensajeError = null,
+                        contrasena = "",
+                        confirmarContrasena = "",
+                        requisitos = PasswordPolicy.evaluar(""),
+                        confirmarError = null
+                    )
+                }
+                is ResultadoRegistro.RutOCorreoDuplicado -> {
+                    _uiState.value = estado.copy(
+                        enviando = false,
+                        mensajeError = "El RUT o el correo ya están registrados."
+                    )
+                }
+                is ResultadoRegistro.Error -> {
+                    _uiState.value = estado.copy(enviando = false, mensajeError = resultado.mensaje)
+                }
+            }
+        }
+    }
+
+    fun limpiarRegistro() {
+        _uiState.value = RegistroUiState()
+    }
+
+    private fun calcularErrores(estado: RegistroUiState): RegistroUiState {
+        return estado.copy(
+            rutError = if (RutValidator.esValido(estado.rut.trim())) null else "RUT inválido",
+            correoError = if (Patterns.EMAIL_ADDRESS.matcher(estado.correo.trim()).matches()) null else "Correo electrónico inválido",
+            telefonoError = validarTelefono(estado.telefono),
+            confirmarError = if (estado.confirmarContrasena.isNotEmpty() && estado.confirmarContrasena == estado.contrasena) null else "Las contraseñas no coinciden",
+            requisitos = PasswordPolicy.evaluar(estado.contrasena)
+        )
+    }
+
+    private fun validarTelefono(telefono: String): String? {
+        if (telefono.isBlank()) return null
+        val digitos = telefono.count { it.isDigit() }
+        return if (digitos in 8..12) null else "El teléfono debe tener entre 8 y 12 dígitos"
+    }
+}

@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
-import com.example.app_induztek.ui.viewmodel.InduztekViewModel
+import com.example.app_induztek.ui.viewmodel.TecnicoViewModel
 
 @Composable
 fun TecnicoSincronizacionScreen(
-    viewModel: InduztekViewModel
+    viewModel: TecnicoViewModel
 ) {
     val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
     val protocolos by viewModel.todosLosProtocolos.collectAsStateWithLifecycle()
@@ -46,19 +46,27 @@ fun TecnicoSincronizacionScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.CloudUpload,
-                        contentDescription = "Subir datos",
+                        contentDescription = "Marcar como sincronizado",
                         modifier = Modifier.size(48.dp),
                         tint = Color(0xFFFB8C00)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tienes $pendientes mediciones por sincronizar",
+                        text = "Tienes $pendientes protocolos pendientes de marcar",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "La sincronización es local: los protocolos se marcan como sincronizados en este dispositivo.",
+                        fontSize = 12.sp,
+                        color = Color.DarkGray,
+                        textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     BotonPrincipalInduztek(
-                        texto = "SINCRONIZAR AHORA",
+                        texto = "MARCAR COMO SINCRONIZADO (MODO LOCAL)",
                         onClick = { viewModel.sincronizarProtocolos() }
                     )
                 }
@@ -66,7 +74,7 @@ fun TecnicoSincronizacionScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Detalle de mediciones en terreno:",
+                text = "Detalle de protocolos pendientes:",
                 modifier = Modifier.align(Alignment.Start),
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp
@@ -75,9 +83,10 @@ fun TecnicoSincronizacionScreen(
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
             ) {
-                items(protocolosPendientes) { protocolo ->
+                items(protocolosPendientes, key = { it.id_protocolo }) { protocolo ->
                     val medicionesDelProtocolo = todasLasMediciones.filter { it.id_protocolo == protocolo.id_protocolo }
 
                     Card(
@@ -95,7 +104,8 @@ fun TecnicoSincronizacionScreen(
                                 Text(
                                     text = "Protocolo: ${protocolo.numero}",
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
                                 )
                                 Text(
                                     text = protocolo.resultado,
@@ -118,6 +128,7 @@ fun TecnicoSincronizacionScreen(
 
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(text = "Temp. Aceite: ${protocolo.temperatura_c}°C", fontSize = 12.sp)
+                            Text(text = "Humedad: ${protocolo.humedad_pct}%", fontSize = 12.sp)
                             Text(text = "Obs: ${protocolo.observaciones}", fontSize = 12.sp, color = Color.DarkGray)
                         }
                     }
@@ -139,17 +150,17 @@ fun TecnicoSincronizacionScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Base de Datos Actualizada",
+                    text = "Sin protocolos pendientes",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 Text(
-                    text = "Todas tus mediciones en terreno han sido respaldadas correctamente.",
+                    text = "Todos tus protocolos ya están marcados como sincronizados en este dispositivo.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp),
                     color = Color.Gray
                 )
             }

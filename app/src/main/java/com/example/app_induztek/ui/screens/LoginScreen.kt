@@ -1,5 +1,6 @@
 package com.example.app_induztek.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,19 +36,16 @@ import com.example.app_induztek.R
 import com.example.app_induztek.ui.components.BotonPrincipalInduztek
 import com.example.app_induztek.ui.components.CampoContrasenaInduztek
 import com.example.app_induztek.ui.components.CampoTextoInduztek
-import com.example.app_induztek.ui.viewmodel.InduztekViewModel
+import com.example.app_induztek.ui.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    viewModel: InduztekViewModel,
+    viewModel: LoginViewModel,
     onLoginSuccess: () -> Unit,
-    onNavigateToRegistro: () -> Unit,
-    onNavigateToRecuperar: () -> Unit = {}
+    onRegistroClick: () -> Unit,
+    onRecuperarClick: () -> Unit = {}
 ) {
-    val email by viewModel.loginEmail.collectAsStateWithLifecycle()
-    val password by viewModel.loginPassword.collectAsStateWithLifecycle()
-    val error by viewModel.loginError.collectAsStateWithLifecycle()
-    val isLoggingIn by viewModel.isLoggingIn.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
 
     LaunchedEffect(currentUser) {
@@ -94,7 +92,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             CampoTextoInduztek(
-                valor = email,
+                valor = uiState.email,
                 onValorCambia = { viewModel.onLoginEmailChange(it) },
                 etiqueta = stringResource(R.string.campo_correo),
                 icono = Icons.Default.Email,
@@ -104,7 +102,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoContrasenaInduztek(
-                valor = password,
+                valor = uiState.password,
                 onValorCambia = { viewModel.onLoginPasswordChange(it) },
                 etiqueta = stringResource(R.string.campo_contrasena),
                 icono = Icons.Default.Lock
@@ -112,11 +110,11 @@ fun LoginScreen(
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 TextButton(
-                    onClick = onNavigateToRecuperar,
+                    onClick = onRecuperarClick,
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.btn_olvide_pass),
+                        text = "¿Olvidaste tu contraseña?",
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold
@@ -124,28 +122,27 @@ fun LoginScreen(
                 }
             }
 
-            if (error != null) {
-                Spacer(modifier = Modifier.height(8.dp))
+            AnimatedVisibility(visible = uiState.error != null) {
                 Text(
-                    text = error!!,
+                    text = uiState.error.orEmpty(),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             BotonPrincipalInduztek(
                 texto = stringResource(R.string.btn_iniciar_sesion),
-                cargando = isLoggingIn,
+                cargando = uiState.isLoggingIn,
                 onClick = { viewModel.iniciarSesion() }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = onNavigateToRegistro) {
+            TextButton(onClick = onRegistroClick) {
                 Text(
                     text = stringResource(R.string.btn_ir_registro),
                     color = MaterialTheme.colorScheme.secondary,

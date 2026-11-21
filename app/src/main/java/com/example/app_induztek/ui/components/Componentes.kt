@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -36,13 +37,19 @@ fun CampoTextoInduztek(
     etiqueta: String,
     icono: ImageVector,
     modifier: Modifier = Modifier,
-    tipoTeclado: KeyboardType = KeyboardType.Text
+    tipoTeclado: KeyboardType = KeyboardType.Text,
+    error: String? = null
 ) {
     OutlinedTextField(
         value = valor,
         onValueChange = onValorCambia,
         label = { Text(etiqueta) },
         leadingIcon = { Icon(imageVector = icono, contentDescription = null) },
+        trailingIcon = error?.let {
+            { Icon(imageVector = Icons.Filled.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error) }
+        },
+        isError = error != null,
+        supportingText = error?.let { { Text(it) } },
         keyboardOptions = KeyboardOptions(keyboardType = tipoTeclado),
         singleLine = true,
         shape = RoundedCornerShape(8.dp),

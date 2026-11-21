@@ -8,7 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 
-
 private val EsquemaTecnico = lightColorScheme(
     primary = VerdeTecnico,
     onPrimary = Blanco,

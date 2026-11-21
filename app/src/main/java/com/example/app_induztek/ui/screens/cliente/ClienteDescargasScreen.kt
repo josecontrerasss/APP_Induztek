@@ -1,12 +1,32 @@
 package com.example.app_induztek.ui.screens.cliente
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -16,16 +36,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.app_induztek.ui.theme.*
-import com.example.app_induztek.ui.viewmodel.InduztekViewModel
+import com.example.app_induztek.ui.theme.ErrorRojo
+import com.example.app_induztek.ui.theme.ExitoVerde
+import com.example.app_induztek.ui.theme.VerdeTecnico
+import com.example.app_induztek.ui.viewmodel.ClienteViewModel
 
 @Composable
 fun ClienteDescargasScreen(
-    viewModel: InduztekViewModel,
+    viewModel: ClienteViewModel,
     modifier: Modifier = Modifier
 ) {
     val protocolos by viewModel.protocolosCliente.collectAsStateWithLifecycle()
     val formalizados = protocolos.filter { it.estado == "FORMALIZADO" }
+
+    CertificadoEffect(viewModel)
 
     Column(
         modifier = modifier
@@ -47,8 +71,18 @@ fun ClienteDescargasScreen(
 
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
+            if (formalizados.isEmpty()) {
+                item {
+                    Text(
+                        text = "No hay certificados formalizados disponibles.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             items(formalizados) { proto ->
                 ElevatedCard(
                     shape = RoundedCornerShape(12.dp),
@@ -107,10 +141,10 @@ fun ClienteDescargasScreen(
                         }
 
                         Row {
-                            IconButton(onClick = { viewModel.simularDescargaCertificado(proto) }) {
+                            IconButton(onClick = { viewModel.descargarCertificado(proto) }) {
                                 Icon(Icons.Default.FileDownload, contentDescription = "Descargar", tint = VerdeTecnico)
                             }
-                            IconButton(onClick = { viewModel.simularDescargaCertificado(proto) }) {
+                            IconButton(onClick = { viewModel.descargarCertificado(proto) }) {
                                 Icon(Icons.Default.Share, contentDescription = "Compartir", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }

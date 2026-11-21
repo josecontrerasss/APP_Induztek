@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
@@ -38,14 +39,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.data.local.entities.InstalacionEntity
 import com.example.app_induztek.data.local.entities.ProtocoloEntity
-import com.example.app_induztek.ui.viewmodel.InduztekViewModel
-
+import com.example.app_induztek.ui.viewmodel.ClienteViewModel
 
 private val VerdeInduztek = Color(0xFF1B5E20)
 private val VerdeMedio = Color(0xFF2E7D32)
@@ -54,12 +55,28 @@ private val ContenedorAmbar = Color(0xFFFFE0B2)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClienteInstalacionesScreen(
-    viewModel: InduztekViewModel,
+    viewModel: ClienteViewModel,
     modifier: Modifier = Modifier
 ) {
     val instalaciones by viewModel.instalacionesCliente.collectAsStateWithLifecycle()
+    val totalInstalaciones by viewModel.totalInstalacionesCliente.collectAsStateWithLifecycle()
     val protocolos by viewModel.protocolosCliente.collectAsStateWithLifecycle()
     val searchQuery by viewModel.clienteSearchQuery.collectAsStateWithLifecycle()
+    val perfil by viewModel.perfil.collectAsStateWithLifecycle()
+    val instalacionSeleccionada by viewModel.instalacionSeleccionada.collectAsStateWithLifecycle()
+
+    CertificadoEffect(viewModel)
+
+    if (instalacionSeleccionada != null) {
+        InstalacionDetalleDialog(
+            instalacion = instalacionSeleccionada!!,
+            viewModel = viewModel,
+            onDismiss = { viewModel.cerrarInstalacion() }
+        )
+    }
+
+    val busquedaActiva = searchQuery.trim().isNotEmpty()
+    val searchTrim = searchQuery.trim()
 
     LazyColumn(
         modifier = modifier
@@ -102,12 +119,18 @@ fun ClienteInstalacionesScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Minera del Norte SpA",
+                            text = perfil?.nombre?.ifBlank { null } ?: "No informado",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
+                        val rut = perfil?.rut?.ifBlank { null }
+                        val giro = perfil?.giro?.ifBlank { null }
+                        val detalle = buildList {
+                            if (rut != null) add("RUT: $rut")
+                            if (giro != null) add("Giro: $giro")
+                        }.joinToString(" · ")
                         Text(
-                            text = "RUT: 76.543.210-K · Giro: Minería de Cobre",
+                            text = if (detalle.isNotBlank()) detalle else "No informado",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -116,7 +139,6 @@ fun ClienteInstalacionesScreen(
             }
         }
 
-        // 2. Buscador de Instalaciones
         item {
             OutlinedTextField(
                 value = searchQuery,
@@ -128,6 +150,17 @@ fun ClienteInstalacionesScreen(
                         contentDescription = "Buscar",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.setClienteSearchQuery("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Limpiar búsqueda",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
@@ -141,7 +174,6 @@ fun ClienteInstalacionesScreen(
             )
         }
 
-
         item {
             Text(
                 text = "INSTALACIONES",
@@ -154,14 +186,38 @@ fun ClienteInstalacionesScreen(
             )
         }
 
+        if (instalaciones.isEmpty()) {
+            item {
+                Text(
+                    text = if (busquedaActiva) {
+                        "No se encontraron instalaciones con \"$searchTrim\""
+                    } else {
+                        "No hay instalaciones registradas."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
-        items(instalaciones) { inst ->
+        items(instalaciones, key = { "inst-${it.id_instalacion}" }) { inst ->
             InstalacionClienteCard(
                 instalacion = inst,
-                onClick = {  }
+                onClick = { viewModel.seleccionarInstalacion(inst) },
+                modifier = Modifier.animateItem()
             )
         }
 
+        if (!busquedaActiva && totalInstalaciones > 3) {
+            item {
+                Text(
+                    text = "Mostrando 3 de $totalInstalaciones instalaciones. Usa el buscador para encontrar las demás.",
+                    style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+        }
 
         item {
             Row(
@@ -182,12 +238,22 @@ fun ClienteInstalacionesScreen(
             }
         }
 
+        if (protocolos.isEmpty()) {
+            item {
+                Text(
+                    text = "No hay protocolos registrados.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
-        items(protocolos) { protocolo ->
+        items(protocolos, key = { "prot-${it.id_protocolo}" }) { protocolo ->
             ProtocoloClienteCard(
                 protocolo = protocolo,
                 onVerDetalle = { viewModel.verDetalleProtocolo(protocolo) },
-                onDescargar = { viewModel.simularDescargaCertificado(protocolo) }
+                onDescargar = { viewModel.descargarCertificado(protocolo) },
+                modifier = Modifier.animateItem()
             )
         }
 
@@ -200,12 +266,13 @@ fun ClienteInstalacionesScreen(
 @Composable
 fun InstalacionClienteCard(
     instalacion: InstalacionEntity,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     ElevatedCard(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
     ) {
@@ -251,7 +318,8 @@ fun InstalacionClienteCard(
 fun ProtocoloClienteCard(
     protocolo: ProtocoloEntity,
     onVerDetalle: () -> Unit,
-    onDescargar: () -> Unit
+    onDescargar: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val isFormalizado = protocolo.estado == "FORMALIZADO"
     val estadoLabel = if (isFormalizado) "Aprobado" else "En revisión"
@@ -262,7 +330,7 @@ fun ProtocoloClienteCard(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onVerDetalle)
     ) {
@@ -306,7 +374,6 @@ fun ProtocoloClienteCard(
                     )
                 }
 
-
                 IconButton(
                     onClick = onDescargar,
                     modifier = Modifier.size(36.dp)
@@ -322,4 +389,3 @@ fun ProtocoloClienteCard(
         }
     }
 }
-
