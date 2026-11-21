@@ -13,6 +13,13 @@ interface EquipoDao {
     @Query("SELECT * FROM equipos WHERE id_instalacion = :instalacionId ORDER BY tag ASC")
     fun getEquiposByInstalacion(instalacionId: Int): Flow<List<EquipoEntity>>
 
+    @Query("""
+        SELECT * FROM equipos
+        WHERE id_instalacion IN (SELECT id_instalacion FROM visitas WHERE id_tecnico = :tecnicoId)
+        ORDER BY id_instalacion ASC, tag ASC
+    """)
+    fun getEquiposByTecnico(tecnicoId: Int): Flow<List<EquipoEntity>>
+
     @Query("SELECT * FROM equipos ORDER BY id_equipo ASC")
     fun getAllEquipos(): Flow<List<EquipoEntity>>
 

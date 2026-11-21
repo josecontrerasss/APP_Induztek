@@ -43,7 +43,7 @@ class LoginViewModel(
                 val rolCodigo = repository.getRolDeUsuario(usuario.id_usuario)
                 val rol = if (rolCodigo == "CLIENTE") UserRole.CLIENTE else UserRole.TECNICO
                 session.login(usuario, rol)
-                _uiState.value = _uiState.value.copy(error = null, isLoggingIn = false)
+                _uiState.value = _uiState.value.copy(password = "", error = null, isLoggingIn = false)
             } else {
                 _uiState.value = _uiState.value.copy(
                     error = "Correo o contraseña incorrectos.",

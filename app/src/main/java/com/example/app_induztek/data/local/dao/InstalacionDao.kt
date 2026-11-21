@@ -16,6 +16,14 @@ interface InstalacionDao {
     @Query("SELECT * FROM instalaciones WHERE id_usuario_cliente = :clienteId ORDER BY id_instalacion ASC")
     fun getInstalacionesByCliente(clienteId: Int): Flow<List<InstalacionEntity>>
 
+    @Query("""
+        SELECT DISTINCT i.* FROM instalaciones i
+        INNER JOIN visitas v ON v.id_instalacion = i.id_instalacion
+        WHERE v.id_tecnico = :tecnicoId
+        ORDER BY i.id_instalacion ASC
+    """)
+    fun getInstalacionesByTecnico(tecnicoId: Int): Flow<List<InstalacionEntity>>
+
     @Query("SELECT * FROM instalaciones WHERE id_instalacion = :id LIMIT 1")
     fun getInstalacionById(id: Int): Flow<InstalacionEntity?>
 

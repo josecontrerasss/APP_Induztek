@@ -85,8 +85,8 @@ fun TecnicoMedicionScreen(
 ) {
     val contexto = LocalContext.current
     val form by viewModel.formState.collectAsStateWithLifecycle()
-    val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
-    val equipos by viewModel.todosLosEquipos.collectAsStateWithLifecycle()
+    val instalaciones by viewModel.instalacionesAsignadas.collectAsStateWithLifecycle()
+    val equipos by viewModel.equiposAsignados.collectAsStateWithLifecycle()
     val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
     val selInstalacion by viewModel.selectedInstalacionId.collectAsStateWithLifecycle()
     val selEquipo by viewModel.selectedEquipoId.collectAsStateWithLifecycle()

@@ -24,7 +24,7 @@ data class UsuarioEntity(
     val nombre: String,
     val correo: String,
     val telefono: String = "",
-    val password_hash: String = "123",
+    val password_hash: String = "",
     val password_salt: String = "",
     val activo: Boolean = true,
     val giro: String? = null,
@@ -80,8 +80,11 @@ data class EquipoEntity(
 
 @Entity(
     tableName = "visitas",
-    foreignKeys = [ForeignKey(entity = InstalacionEntity::class, parentColumns = ["id_instalacion"], childColumns = ["id_instalacion"], onDelete = ForeignKey.CASCADE)],
-    indices = [Index(value = ["numero_ot"], unique = true), Index(value = ["id_instalacion"])]
+    foreignKeys = [
+        ForeignKey(entity = InstalacionEntity::class, parentColumns = ["id_instalacion"], childColumns = ["id_instalacion"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = UsuarioEntity::class, parentColumns = ["id_usuario"], childColumns = ["id_tecnico"], onDelete = ForeignKey.SET_NULL)
+    ],
+    indices = [Index(value = ["numero_ot"], unique = true), Index(value = ["id_instalacion"]), Index(value = ["id_tecnico"])]
 )
 data class VisitaEntity(
     @PrimaryKey(autoGenerate = true) val id_visita: Int = 0,
@@ -89,7 +92,8 @@ data class VisitaEntity(
     val id_instalacion: Int,
     val fecha: String,
     val tipo_visita: String = "PRUEBAS_Y_MANT",
-    val id_ingeniero_cargo: Int = 3
+    val id_ingeniero_cargo: Int = 3,
+    val id_tecnico: Int? = null
 )
 
 @Entity(

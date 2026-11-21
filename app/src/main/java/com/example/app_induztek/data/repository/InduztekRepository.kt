@@ -97,7 +97,41 @@ class InduztekRepository(
         }
     }
 
+    suspend fun cambiarClave(idUsuario: Int, claveActual: String, claveNueva: String): ResultadoCambioClave {
+        val usuario = usuarioDao.getUsuarioPorId(idUsuario)
+            ?: return ResultadoCambioClave.Error("Usuario no encontrado.")
+        if (!PasswordHasher.verify(claveActual, usuario.password_salt, usuario.password_hash)) {
+            return ResultadoCambioClave.ClaveActualIncorrecta
+        }
+        if (claveActual == claveNueva) {
+            return ResultadoCambioClave.MismaClave
+        }
+        if (!PasswordPolicy.evaluar(claveNueva).valida) {
+            return ResultadoCambioClave.Error("La nueva contraseña no cumple los requisitos.")
+        }
+        val salt = PasswordHasher.newSalt()
+        usuarioDao.updateUsuario(
+            usuario.copy(password_hash = PasswordHasher.hash(claveNueva, salt), password_salt = salt)
+        )
+        return ResultadoCambioClave.Exito
+    }
+
     val todasLasInstalaciones: Flow<List<InstalacionEntity>> = instalacionDao.getAllInstalaciones()
+
+    fun getInstalacionesByTecnico(tecnicoId: Int): Flow<List<InstalacionEntity>> =
+        instalacionDao.getInstalacionesByTecnico(tecnicoId)
+
+    fun getEquiposByTecnico(tecnicoId: Int): Flow<List<EquipoEntity>> =
+        equipoDao.getEquiposByTecnico(tecnicoId)
+
+    fun getProtocolosByTecnico(tecnicoId: Int): Flow<List<ProtocoloEntity>> =
+        protocoloDao.getProtocolosByTecnico(tecnicoId)
+
+    fun getMedicionesByTecnico(tecnicoId: Int): Flow<List<MedicionEntity>> =
+        medicionDao.getMedicionesByTecnico(tecnicoId)
+
+    fun countPendientesByTecnico(tecnicoId: Int): Flow<Int> =
+        protocoloDao.countPendientesByTecnico(tecnicoId)
 
     fun getInstalacionesByCliente(clienteId: Int): Flow<List<InstalacionEntity>> {
         return instalacionDao.getInstalacionesByCliente(clienteId)
@@ -109,13 +143,9 @@ class InduztekRepository(
         return equipoDao.getEquiposByInstalacion(instalacionId)
     }
 
-    val todosLosProtocolos: Flow<List<ProtocoloEntity>> = protocoloDao.getAllProtocolos()
-
     fun getProtocolosCliente(clienteId: Int): Flow<List<ProtocoloEntity>> {
         return protocoloDao.getProtocolosByCliente(clienteId)
     }
-
-    val countPendientesSincronizar: Flow<Int> = protocoloDao.countPendientesSincronizar()
 
     fun getMedicionesByProtocolo(protocoloId: Int): Flow<List<MedicionEntity>> {
         return medicionDao.getMedicionesByProtocolo(protocoloId)
@@ -128,7 +158,8 @@ class InduztekRepository(
         mediciones: List<MedicionEntity>
     ): Long = protocoloDao.guardarProtocoloConMediciones(protocolo, mediciones)
 
-    suspend fun sincronizarProtocolos(): Int = protocoloDao.sincronizarTodos()
+    suspend fun sincronizarProtocolos(tecnicoId: Int): Int = protocoloDao.sincronizarByTecnico(tecnicoId)
 
-    suspend fun getUltimaVisitaId(instalacionId: Int): Int? = visitaDao.getUltimaVisitaId(instalacionId)
+    suspend fun getUltimaVisitaIdDeTecnico(instalacionId: Int, tecnicoId: Int): Int? =
+        visitaDao.getUltimaVisitaIdDeTecnico(instalacionId, tecnicoId)
 }

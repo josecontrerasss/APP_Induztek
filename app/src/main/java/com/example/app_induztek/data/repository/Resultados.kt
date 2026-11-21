@@ -14,6 +14,13 @@ sealed interface ResultadoRecuperacion {
     data class Error(val mensaje: String) : ResultadoRecuperacion
 }
 
+sealed interface ResultadoCambioClave {
+    data object Exito : ResultadoCambioClave
+    data object ClaveActualIncorrecta : ResultadoCambioClave
+    data object MismaClave : ResultadoCambioClave
+    data class Error(val mensaje: String) : ResultadoCambioClave
+}
+
 sealed interface ResultadoRegistro {
     data class Exito(val idUsuario: Long) : ResultadoRegistro
     data object RutOCorreoDuplicado : ResultadoRegistro

@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
         ProtocoloEntity::class,
         MedicionEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -197,14 +197,16 @@ abstract class AppDatabase : RoomDatabase() {
                 numero_ot = "OT-2026-1187",
                 id_instalacion = 1,
                 fecha = "15-05-2026",
-                tipo_visita = "PRUEBAS_Y_MANT"
+                tipo_visita = "PRUEBAS_Y_MANT",
+                id_tecnico = 1
             ),
             VisitaEntity(
                 id_visita = 2,
                 numero_ot = "OT-2026-1140",
                 id_instalacion = 2,
                 fecha = "10-05-2026",
-                tipo_visita = "SOLO_PRUEBAS"
+                tipo_visita = "SOLO_PRUEBAS",
+                id_tecnico = 1
             )
         )
         visitaDao().insertVisitas(visitas)
@@ -319,6 +321,34 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_5_6: Migration = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `visitas_new` (" +
+                        "`id_visita` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`numero_ot` TEXT NOT NULL, " +
+                        "`id_instalacion` INTEGER NOT NULL, " +
+                        "`fecha` TEXT NOT NULL, " +
+                        "`tipo_visita` TEXT NOT NULL, " +
+                        "`id_ingeniero_cargo` INTEGER NOT NULL, " +
+                        "`id_tecnico` INTEGER, " +
+                        "FOREIGN KEY(`id_instalacion`) REFERENCES `instalaciones`(`id_instalacion`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                        "FOREIGN KEY(`id_tecnico`) REFERENCES `usuarios`(`id_usuario`) ON UPDATE NO ACTION ON DELETE SET NULL )"
+                )
+                db.execSQL(
+                    "INSERT INTO `visitas_new` (`id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, `id_tecnico`) " +
+                        "SELECT `id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, " +
+                        "(SELECT u.`id_usuario` FROM `usuarios` u INNER JOIN `roles` r ON u.`id_rol` = r.`id_rol` WHERE r.`codigo` = 'TECNICO' ORDER BY u.`id_usuario` LIMIT 1) " +
+                        "FROM `visitas`"
+                )
+                db.execSQL("DROP TABLE `visitas`")
+                db.execSQL("ALTER TABLE `visitas_new` RENAME TO `visitas`")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_visitas_numero_ot` ON `visitas` (`numero_ot`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_visitas_id_instalacion` ON `visitas` (`id_instalacion`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_visitas_id_tecnico` ON `visitas` (`id_tecnico`)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: run {
@@ -327,7 +357,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "induztek_database.db"
                     )
-                        .addMigrations(MIGRATION_4_5)
+                        .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                         .build()
                     INSTANCE = instance
                     scope.launch { instance.ensureSeeded() }

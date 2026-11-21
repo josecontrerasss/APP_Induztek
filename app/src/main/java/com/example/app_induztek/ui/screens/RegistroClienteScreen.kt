@@ -181,6 +181,7 @@ fun RegistroClienteScreen(
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         RequisitoContrasena(cumple = state.requisitos.longitudOk, texto = "Mínimo 8 caracteres")
+                        RequisitoContrasena(cumple = state.requisitos.tieneMayuscula, texto = "Al menos 1 mayúscula")
                         RequisitoContrasena(cumple = state.requisitos.tieneNumero, texto = "Al menos 1 número")
                         RequisitoContrasena(cumple = state.requisitos.tieneEspecial, texto = "Al menos 1 carácter especial")
                         RequisitoContrasena(cumple = coincidenContrasenas, texto = "Las contraseñas coinciden")

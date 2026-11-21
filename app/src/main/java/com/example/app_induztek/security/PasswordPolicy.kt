@@ -6,17 +6,19 @@ object PasswordPolicy {
 
     data class Resultado(
         val longitudOk: Boolean,
+        val tieneMayuscula: Boolean,
         val tieneNumero: Boolean,
         val tieneEspecial: Boolean
     ) {
         val valida: Boolean
-            get() = longitudOk && tieneNumero && tieneEspecial
+            get() = longitudOk && tieneMayuscula && tieneNumero && tieneEspecial
     }
 
     fun evaluar(password: String): Resultado {
         val longitudOk = password.length >= LONGITUD_MINIMA
+        val tieneMayuscula = password.any { it.isUpperCase() }
         val tieneNumero = password.any { it.isDigit() }
         val tieneEspecial = password.any { !it.isLetter() && !it.isDigit() && !it.isWhitespace() }
-        return Resultado(longitudOk, tieneNumero, tieneEspecial)
+        return Resultado(longitudOk, tieneMayuscula, tieneNumero, tieneEspecial)
     }
 }

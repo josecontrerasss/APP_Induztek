@@ -31,7 +31,8 @@ class ShellViewModel(
 
     val userMessage: StateFlow<String?> = messages.message
 
-    val pendientesSyncCount: StateFlow<Int> = repository.countPendientesSincronizar
+    val pendientesSyncCount: StateFlow<Int> = session
+        .delUsuarioActual(0) { repository.countPendientesByTecnico(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     fun setTecnicoTab(tab: TecnicoTab) {
@@ -43,8 +44,9 @@ class ShellViewModel(
     }
 
     fun sincronizarProtocolos() {
+        val usuario = session.user.value ?: return
         viewModelScope.launch {
-            repository.sincronizarProtocolos()
+            repository.sincronizarProtocolos(usuario.id_usuario)
             messages.show("¡Sincronización completada con éxito!")
         }
     }

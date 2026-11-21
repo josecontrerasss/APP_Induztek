@@ -20,6 +20,18 @@ data class RegistroUiState(
     val registroExitoso: Boolean = false
 )
 
+data class CambiarClaveUiState(
+    val claveActual: String = "",
+    val claveNueva: String = "",
+    val confirmarClave: String = "",
+    val requisitos: PasswordPolicy.Resultado = PasswordPolicy.evaluar(""),
+    val claveActualError: String? = null,
+    val claveNuevaError: String? = null,
+    val confirmarError: String? = null,
+    val guardando: Boolean = false,
+    val exito: Boolean = false
+)
+
 data class RecuperarClaveUiState(
     val correo: String = "",
     val correoError: String? = null,

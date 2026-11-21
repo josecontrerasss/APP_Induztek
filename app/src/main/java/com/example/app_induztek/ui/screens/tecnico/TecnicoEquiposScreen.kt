@@ -27,8 +27,8 @@ import com.example.app_induztek.ui.viewmodel.TecnicoViewModel
 fun TecnicoEquiposScreen(
     viewModel: TecnicoViewModel
 ) {
-    val equipos by viewModel.todosLosEquipos.collectAsStateWithLifecycle()
-    val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
+    val equipos by viewModel.equiposAsignados.collectAsStateWithLifecycle()
+    val instalaciones by viewModel.instalacionesAsignadas.collectAsStateWithLifecycle()
     var busqueda by remember { mutableStateOf("") }
 
     val filtrados = remember(equipos, busqueda) {

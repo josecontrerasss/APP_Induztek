@@ -1,6 +1,5 @@
 package com.example.app_induztek.ui.viewmodel
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_induztek.data.local.entities.EquipoEntity
@@ -9,7 +8,6 @@ import com.example.app_induztek.data.local.entities.MedicionEntity
 import com.example.app_induztek.data.local.entities.ProtocoloEntity
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import com.example.app_induztek.data.repository.InduztekRepository
-import com.example.app_induztek.data.repository.ResultadoPerfil
 import com.example.app_induztek.di.SessionManager
 import com.example.app_induztek.di.UserMessages
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,20 +29,6 @@ data class CertificadoData(
     val instalacion: InstalacionEntity?,
     val mediciones: List<MedicionEntity>,
     val cliente: UsuarioEntity?
-)
-
-data class PerfilEditState(
-    val nombre: String = "",
-    val correo: String = "",
-    val telefono: String = "",
-    val giro: String = "",
-    val contactoNombre: String = "",
-    val contactoCargo: String = "",
-    val editando: Boolean = false,
-    val guardando: Boolean = false,
-    val nombreError: String? = null,
-    val correoError: String? = null,
-    val telefonoError: String? = null
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -126,9 +110,6 @@ class ClienteViewModel(
     private val _certificadoPendiente = MutableStateFlow<CertificadoData?>(null)
     val certificadoPendiente: StateFlow<CertificadoData?> = _certificadoPendiente.asStateFlow()
 
-    private val _perfilEdit = MutableStateFlow(PerfilEditState())
-    val perfilEdit: StateFlow<PerfilEditState> = _perfilEdit.asStateFlow()
-
     init {
         viewModelScope.launch {
             session.user.collect { user ->
@@ -136,7 +117,6 @@ class ClienteViewModel(
                     _instalacionSeleccionada.value = null
                     _selectedProtocoloDetalle.value = null
                     _certificadoPendiente.value = null
-                    _perfilEdit.value = PerfilEditState()
                 }
             }
         }
@@ -188,112 +168,6 @@ class ClienteViewModel(
     fun certificadoFallido() {
         messages.show("No se pudo generar el certificado.")
         _certificadoPendiente.value = null
-    }
-
-    fun iniciarEdicionPerfil() {
-        val user = session.user.value ?: return
-        _perfilEdit.value = PerfilEditState(
-            nombre = user.nombre,
-            correo = user.correo,
-            telefono = user.telefono,
-            giro = user.giro.orEmpty(),
-            contactoNombre = user.contacto_nombre.orEmpty(),
-            contactoCargo = user.contacto_cargo.orEmpty(),
-            editando = true
-        )
-    }
-
-    fun onPerfilNombreChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(nombre = value, nombreError = null)
-    }
-
-    fun onPerfilCorreoChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(correo = value, correoError = null)
-    }
-
-    fun onPerfilTelefonoChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(telefono = value, telefonoError = null)
-    }
-
-    fun onPerfilGiroChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(giro = value)
-    }
-
-    fun onPerfilContactoNombreChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(contactoNombre = value)
-    }
-
-    fun onPerfilContactoCargoChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(contactoCargo = value)
-    }
-
-    fun cancelarEdicionPerfil() {
-        _perfilEdit.value = PerfilEditState()
-    }
-
-    fun guardarPerfil() {
-        val current = _perfilEdit.value
-        if (current.guardando) return
-
-        val user = session.user.value ?: return
-
-        val nombreTrim = current.nombre.trim()
-        val correoTrim = current.correo.trim()
-        val telefonoTrim = current.telefono.trim()
-
-        val nombreError = if (nombreTrim.isBlank()) "El nombre es obligatorio." else null
-        val correoError = if (correoTrim.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(correoTrim).matches()) {
-            "Ingresa un correo válido."
-        } else null
-        val digitos = telefonoTrim.filter { it.isDigit() }
-        val telefonoError = if (telefonoTrim.isNotEmpty() && (digitos.length < 8 || digitos.length > 12)) {
-            "El teléfono debe tener entre 8 y 12 dígitos."
-        } else null
-
-        if (nombreError != null || correoError != null || telefonoError != null) {
-            _perfilEdit.value = current.copy(
-                nombreError = nombreError,
-                correoError = correoError,
-                telefonoError = telefonoError
-            )
-            return
-        }
-
-        val actualizado = user.copy(
-            nombre = nombreTrim,
-            correo = correoTrim,
-            telefono = telefonoTrim,
-            giro = current.giro.trim().ifBlank { null },
-            contacto_nombre = current.contactoNombre.trim().ifBlank { null },
-            contacto_cargo = current.contactoCargo.trim().ifBlank { null }
-        )
-
-        _perfilEdit.value = current.copy(
-            guardando = true,
-            nombreError = null,
-            correoError = null,
-            telefonoError = null
-        )
-
-        viewModelScope.launch {
-            when (val resultado = repository.actualizarPerfil(actualizado)) {
-                is ResultadoPerfil.Exito -> {
-                    session.actualizarUsuario(resultado.usuario)
-                    _perfilEdit.value = PerfilEditState()
-                    messages.show("Perfil actualizado.")
-                }
-                is ResultadoPerfil.CorreoDuplicado -> {
-                    _perfilEdit.value = _perfilEdit.value.copy(
-                        guardando = false,
-                        correoError = "Ese correo ya está en uso."
-                    )
-                }
-                is ResultadoPerfil.Error -> {
-                    _perfilEdit.value = _perfilEdit.value.copy(guardando = false)
-                    messages.show(resultado.mensaje)
-                }
-            }
-        }
     }
 
     companion object {

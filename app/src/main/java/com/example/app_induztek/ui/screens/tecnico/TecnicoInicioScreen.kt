@@ -31,8 +31,8 @@ fun TecnicoInicioScreen(
 ) {
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
-    val instalaciones by viewModel.todasLasInstalaciones.collectAsStateWithLifecycle()
-    val protocolos by viewModel.todosLosProtocolos.collectAsStateWithLifecycle()
+    val instalaciones by viewModel.instalacionesAsignadas.collectAsStateWithLifecycle()
+    val protocolos by viewModel.protocolosDelTecnico.collectAsStateWithLifecycle()
 
     val fechaActual = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("es", "CL")).format(Date())
 

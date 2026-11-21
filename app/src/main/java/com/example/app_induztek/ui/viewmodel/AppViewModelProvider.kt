@@ -22,6 +22,14 @@ object AppViewModelProvider {
         }
         initializer {
             val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
+            CambiarClaveViewModel(app.container.repository, app.container.session, app.container.messages)
+        }
+        initializer {
+            val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
+            PerfilViewModel(app.container.repository, app.container.session, app.container.messages)
+        }
+        initializer {
+            val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
             ShellViewModel(app.container.repository, app.container.session, app.container.messages)
         }
         initializer {

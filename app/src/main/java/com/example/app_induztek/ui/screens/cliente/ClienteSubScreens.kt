@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Security
@@ -52,8 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.app_induztek.data.local.entities.UsuarioEntity
+import com.example.app_induztek.ui.screens.CambiarClaveDialog
 import com.example.app_induztek.ui.viewmodel.ClienteViewModel
 import com.example.app_induztek.ui.viewmodel.PerfilEditState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.app_induztek.ui.viewmodel.AppViewModelProvider
+import com.example.app_induztek.ui.viewmodel.PerfilViewModel
 
 private val VerdeInduztek = Color(0xFF1B5E20)
 
@@ -152,12 +157,18 @@ fun ClienteProtocolosScreen(
 @Composable
 fun ClientePerfilScreen(
     viewModel: ClienteViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    perfilViewModel: PerfilViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val perfil by viewModel.perfil.collectAsStateWithLifecycle()
-    val perfilEdit by viewModel.perfilEdit.collectAsStateWithLifecycle()
+    val perfilEdit by perfilViewModel.perfilEdit.collectAsStateWithLifecycle()
+    var mostrarCambioClave by remember { mutableStateOf(false) }
 
     CertificadoEffect(viewModel)
+
+    if (mostrarCambioClave) {
+        CambiarClaveDialog(onDismiss = { mostrarCambioClave = false })
+    }
 
     Column(
         modifier = modifier
@@ -187,12 +198,13 @@ fun ClientePerfilScreen(
                     PerfilModoEdicion(
                         perfilEdit = perfilEdit,
                         perfil = perfil,
-                        viewModel = viewModel
+                        viewModel = perfilViewModel
                     )
                 } else {
                     PerfilModoLectura(
                         perfil = perfil,
-                        onEditar = { viewModel.iniciarEdicionPerfil() }
+                        onEditar = { perfilViewModel.iniciarEdicionPerfil() },
+                        onCambiarClave = { mostrarCambioClave = true }
                     )
                 }
             }
@@ -203,7 +215,8 @@ fun ClientePerfilScreen(
 @Composable
 private fun PerfilModoLectura(
     perfil: UsuarioEntity?,
-    onEditar: () -> Unit
+    onEditar: () -> Unit,
+    onCambiarClave: () -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -298,6 +311,19 @@ private fun PerfilModoLectura(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Editar perfil")
         }
+
+        OutlinedButton(
+            onClick = onCambiarClave,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Cambiar contraseña")
+        }
     }
 }
 
@@ -305,7 +331,7 @@ private fun PerfilModoLectura(
 private fun PerfilModoEdicion(
     perfilEdit: PerfilEditState,
     perfil: UsuarioEntity?,
-    viewModel: ClienteViewModel
+    viewModel: PerfilViewModel
 ) {
     val habilitado = !perfilEdit.guardando
 

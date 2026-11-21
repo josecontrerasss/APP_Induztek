@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 abstract class ProtocoloDao {
 
-    @Query("SELECT * FROM protocolos ORDER BY id_protocolo DESC")
-    abstract fun getAllProtocolos(): Flow<List<ProtocoloEntity>>
+    @Query("SELECT * FROM protocolos WHERE id_usuario_registra = :tecnicoId ORDER BY id_protocolo DESC")
+    abstract fun getProtocolosByTecnico(tecnicoId: Int): Flow<List<ProtocoloEntity>>
 
     @Query("""
         SELECT p.* FROM protocolos p
@@ -29,8 +29,8 @@ abstract class ProtocoloDao {
     @Query("SELECT * FROM protocolos WHERE sincronizado = 0 ORDER BY id_protocolo DESC")
     abstract fun getProtocolosPendientesSincronizar(): Flow<List<ProtocoloEntity>>
 
-    @Query("SELECT COUNT(*) FROM protocolos WHERE sincronizado = 0")
-    abstract fun countPendientesSincronizar(): Flow<Int>
+    @Query("SELECT COUNT(*) FROM protocolos WHERE sincronizado = 0 AND id_usuario_registra = :tecnicoId")
+    abstract fun countPendientesByTecnico(tecnicoId: Int): Flow<Int>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertProtocolo(protocolo: ProtocoloEntity): Long
@@ -41,8 +41,8 @@ abstract class ProtocoloDao {
     @Update
     abstract suspend fun updateProtocolo(protocolo: ProtocoloEntity): Int
 
-    @Query("UPDATE protocolos SET sincronizado = 1 WHERE sincronizado = 0")
-    abstract suspend fun sincronizarTodos(): Int
+    @Query("UPDATE protocolos SET sincronizado = 1 WHERE sincronizado = 0 AND id_usuario_registra = :tecnicoId")
+    abstract suspend fun sincronizarByTecnico(tecnicoId: Int): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertMediciones(mediciones: List<MedicionEntity>): List<Long>

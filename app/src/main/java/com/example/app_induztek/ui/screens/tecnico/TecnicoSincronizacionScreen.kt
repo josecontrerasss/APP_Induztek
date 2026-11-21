@@ -25,8 +25,8 @@ fun TecnicoSincronizacionScreen(
     viewModel: TecnicoViewModel
 ) {
     val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
-    val protocolos by viewModel.todosLosProtocolos.collectAsStateWithLifecycle()
-    val todasLasMediciones by viewModel.todasLasMediciones.collectAsStateWithLifecycle()
+    val protocolos by viewModel.protocolosDelTecnico.collectAsStateWithLifecycle()
+    val todasLasMediciones by viewModel.medicionesDelTecnico.collectAsStateWithLifecycle()
     val protocolosPendientes = protocolos.filter { !it.sincronizado }
 
     Column(

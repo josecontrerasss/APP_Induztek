@@ -13,6 +13,12 @@ enum class TecnicoTab {
     MAS
 }
 
+enum class FiltroHistorial {
+    TODOS,
+    PENDIENTES,
+    SINCRONIZADOS
+}
+
 enum class ClienteTab {
     INICIO,
     PROTOCOLOS,

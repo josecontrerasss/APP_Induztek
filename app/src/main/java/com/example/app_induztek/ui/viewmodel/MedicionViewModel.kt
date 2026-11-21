@@ -41,13 +41,16 @@ class MedicionViewModel(
     private val _selectedEquipoId = MutableStateFlow<Int?>(null)
     val selectedEquipoId: StateFlow<Int?> = _selectedEquipoId.asStateFlow()
 
-    val todasLasInstalaciones: StateFlow<List<InstalacionEntity>> = repository.todasLasInstalaciones
+    val instalacionesAsignadas: StateFlow<List<InstalacionEntity>> = session
+        .delUsuarioActual(emptyList()) { repository.getInstalacionesByTecnico(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val todosLosEquipos: StateFlow<List<EquipoEntity>> = repository.todosLosEquipos
+    val equiposAsignados: StateFlow<List<EquipoEntity>> = session
+        .delUsuarioActual(emptyList()) { repository.getEquiposByTecnico(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val pendientesSyncCount: StateFlow<Int> = repository.countPendientesSincronizar
+    val pendientesSyncCount: StateFlow<Int> = session
+        .delUsuarioActual(0) { repository.countPendientesByTecnico(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     init {
@@ -62,7 +65,7 @@ class MedicionViewModel(
                     _selectedInstalacionId.value = null
                     _selectedEquipoId.value = null
                 } else if (_selectedInstalacionId.value == null && _selectedEquipoId.value == null) {
-                    val instalaciones = repository.todasLasInstalaciones.first { it.isNotEmpty() }
+                    val instalaciones = repository.getInstalacionesByTecnico(usuario.id_usuario).first()
                     val primera = instalaciones.firstOrNull()
                     if (primera != null) {
                         _selectedInstalacionId.value = primera.id_instalacion
@@ -184,8 +187,9 @@ class MedicionViewModel(
     }
 
     fun sincronizarProtocolos() {
+        val usuario = session.user.value ?: return
         viewModelScope.launch {
-            repository.sincronizarProtocolos()
+            repository.sincronizarProtocolos(usuario.id_usuario)
             messages.show("Protocolos marcados como sincronizados (modo local).")
         }
     }
@@ -225,7 +229,7 @@ class MedicionViewModel(
                     return@launch
                 }
 
-                val visitaId = repository.getUltimaVisitaId(instalacionId)
+                val visitaId = repository.getUltimaVisitaIdDeTecnico(instalacionId, usuario.id_usuario)
                 if (visitaId == null) {
                     messages.show("No hay una OT registrada para esta instalación.")
                     return@launch
