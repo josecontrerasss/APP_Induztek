@@ -9,6 +9,9 @@ import com.example.app_induztek.data.local.entities.ProtocoloEntity
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import com.example.app_induztek.data.remote.ApiResult
 import com.example.app_induztek.data.remote.RemoteDataSource
+import com.example.app_induztek.data.remote.dto.AsignacionCrearDto
+import com.example.app_induztek.data.remote.dto.AsignacionDto
+import com.example.app_induztek.data.remote.dto.UsuarioDto
 import com.example.app_induztek.security.PasswordHasher
 import com.example.app_induztek.security.PasswordPolicy
 import com.example.app_induztek.security.RutValidator
@@ -160,4 +163,38 @@ class InduztekRepository(
 
     suspend fun getUltimaVisitaIdDeTecnico(instalacionId: Int, tecnicoId: Int): Int? =
         visitaDao.getUltimaVisitaIdDeTecnico(instalacionId, tecnicoId)
+
+    suspend fun usuariosPorRol(rol: String): ResultadoRemoto<List<UsuarioDto>> =
+        remote.usuariosPorRol(rol).comoResultado()
+
+    suspend fun asignaciones(): ResultadoRemoto<List<AsignacionDto>> =
+        remote.asignaciones().comoResultado()
+
+    suspend fun crearAsignacion(cliente: UsuarioDto, tecnico: UsuarioDto): ResultadoRemoto<AsignacionDto> =
+        remote.crearAsignacion(
+            AsignacionCrearDto(cliente.idUsuario, cliente.nombre, tecnico.idUsuario, tecnico.nombre)
+        ).comoResultado()
+
+    suspend fun eliminarAsignacion(id: Int): ResultadoRemoto<Unit> =
+        remote.eliminarAsignacion(id).comoResultado()
+
+    private fun <T> ApiResult<T>.comoResultado(): ResultadoRemoto<T> = when (this) {
+        is ApiResult.Success -> ResultadoRemoto.Exito(data)
+        is ApiResult.HttpError -> ResultadoRemoto.Error(
+            when {
+                code == 401 -> MENSAJE_SESION_EXPIRADA
+                code >= 500 -> MENSAJE_SIN_CONEXION
+                else -> mensaje
+            }
+        )
+        is ApiResult.NetworkError -> ResultadoRemoto.Error(MENSAJE_SIN_CONEXION)
+    }
+
+    companion object {
+        const val ROL_CLIENTE = "CLIENTE"
+        const val ROL_TECNICO = "TECNICO"
+        const val ROL_SUPERVISOR = "SUPERVISOR"
+        const val MENSAJE_SIN_CONEXION = "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo."
+        const val MENSAJE_SESION_EXPIRADA = "Tu sesión expiró. Cierra sesión y vuelve a entrar con internet."
+    }
 }

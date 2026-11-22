@@ -26,3 +26,8 @@ sealed interface ResultadoRegistro {
     data object RutOCorreoDuplicado : ResultadoRegistro
     data class Error(val mensaje: String) : ResultadoRegistro
 }
+
+sealed interface ResultadoRemoto<out T> {
+    data class Exito<T>(val datos: T) : ResultadoRemoto<T>
+    data class Error(val mensaje: String) : ResultadoRemoto<Nothing>
+}
