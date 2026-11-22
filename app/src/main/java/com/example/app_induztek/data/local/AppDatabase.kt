@@ -331,21 +331,21 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `visitas_new` (" +
-                            "`id_visita` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                            "`numero_ot` TEXT NOT NULL, " +
-                            "`id_instalacion` INTEGER NOT NULL, " +
-                            "`fecha` TEXT NOT NULL, " +
-                            "`tipo_visita` TEXT NOT NULL, " +
-                            "`id_ingeniero_cargo` INTEGER NOT NULL, " +
-                            "`id_tecnico` INTEGER, " +
-                            "FOREIGN KEY(`id_instalacion`) REFERENCES `instalaciones`(`id_instalacion`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
-                            "FOREIGN KEY(`id_tecnico`) REFERENCES `usuarios`(`id_usuario`) ON UPDATE NO ACTION ON DELETE SET NULL )"
+                        "`id_visita` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`numero_ot` TEXT NOT NULL, " +
+                        "`id_instalacion` INTEGER NOT NULL, " +
+                        "`fecha` TEXT NOT NULL, " +
+                        "`tipo_visita` TEXT NOT NULL, " +
+                        "`id_ingeniero_cargo` INTEGER NOT NULL, " +
+                        "`id_tecnico` INTEGER, " +
+                        "FOREIGN KEY(`id_instalacion`) REFERENCES `instalaciones`(`id_instalacion`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                        "FOREIGN KEY(`id_tecnico`) REFERENCES `usuarios`(`id_usuario`) ON UPDATE NO ACTION ON DELETE SET NULL )"
                 )
                 db.execSQL(
                     "INSERT INTO `visitas_new` (`id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, `id_tecnico`) " +
-                            "SELECT `id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, " +
-                            "(SELECT u.`id_usuario` FROM `usuarios` u INNER JOIN `roles` r ON u.`id_rol` = r.`id_rol` WHERE r.`codigo` = 'TECNICO' ORDER BY u.`id_usuario` LIMIT 1) " +
-                            "FROM `visitas`"
+                        "SELECT `id_visita`, `numero_ot`, `id_instalacion`, `fecha`, `tipo_visita`, `id_ingeniero_cargo`, " +
+                        "(SELECT u.`id_usuario` FROM `usuarios` u INNER JOIN `roles` r ON u.`id_rol` = r.`id_rol` WHERE r.`codigo` = 'TECNICO' ORDER BY u.`id_usuario` LIMIT 1) " +
+                        "FROM `visitas`"
                 )
                 db.execSQL("DROP TABLE `visitas`")
                 db.execSQL("ALTER TABLE `visitas_new` RENAME TO `visitas`")

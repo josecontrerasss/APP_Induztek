@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -34,6 +35,12 @@ interface UsuarioDao {
 
     @Query("SELECT COUNT(*) FROM usuarios WHERE LOWER(correo) = LOWER(:correo) AND id_usuario != :idExcluido")
     suspend fun contarCorreoEnOtros(correo: String, idExcluido: Int): Int
+
+    @Upsert
+    suspend fun upsertUsuario(usuario: UsuarioEntity)
+
+    @Query("DELETE FROM usuarios WHERE LOWER(correo) = LOWER(:correo) AND id_usuario != :idUsuario")
+    suspend fun borrarOtrosConCorreo(correo: String, idUsuario: Int): Int
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertUsuario(usuario: UsuarioEntity): Long

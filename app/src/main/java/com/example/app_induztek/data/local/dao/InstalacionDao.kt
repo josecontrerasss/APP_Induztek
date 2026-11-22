@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import com.example.app_induztek.data.local.entities.InstalacionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -23,6 +24,9 @@ interface InstalacionDao {
 
     @Query("SELECT * FROM instalaciones WHERE id_instalacion = :id LIMIT 1")
     fun getInstalacionById(id: Int): Flow<InstalacionEntity?>
+
+    @Upsert
+    suspend fun upsertInstalaciones(instalaciones: List<InstalacionEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInstalaciones(instalaciones: List<InstalacionEntity>): List<Long>

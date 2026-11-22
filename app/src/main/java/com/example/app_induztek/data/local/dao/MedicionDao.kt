@@ -21,6 +21,9 @@ interface MedicionDao {
     """)
     fun getMedicionesByTecnico(tecnicoId: Int): Flow<List<MedicionEntity>>
 
+    @Query("SELECT * FROM mediciones WHERE id_protocolo = :protocoloId ORDER BY id_medicion ASC")
+    suspend fun getMedicionesDeProtocolo(protocoloId: Int): List<MedicionEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMedicion(medicion: MedicionEntity): Long
 

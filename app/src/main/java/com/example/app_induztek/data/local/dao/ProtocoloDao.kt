@@ -41,8 +41,14 @@ abstract class ProtocoloDao {
     @Update
     abstract suspend fun updateProtocolo(protocolo: ProtocoloEntity): Int
 
-    @Query("UPDATE protocolos SET sincronizado = 1 WHERE sincronizado = 0 AND id_usuario_registra = :tecnicoId")
-    abstract suspend fun sincronizarByTecnico(tecnicoId: Int): Int
+    @Query("SELECT * FROM protocolos WHERE sincronizado = 0 AND id_usuario_registra = :tecnicoId ORDER BY id_protocolo ASC")
+    abstract suspend fun getPendientesByTecnico(tecnicoId: Int): List<ProtocoloEntity>
+
+    @Query("SELECT * FROM protocolos WHERE numero = :numero LIMIT 1")
+    abstract suspend fun getPorNumero(numero: String): ProtocoloEntity?
+
+    @Query("UPDATE protocolos SET sincronizado = 1 WHERE numero IN (:numeros)")
+    abstract suspend fun marcarSincronizados(numeros: List<String>): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertMediciones(mediciones: List<MedicionEntity>): List<Long>

@@ -4,10 +4,14 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import com.example.app_induztek.data.local.entities.VisitaEntity
 
 @Dao
 interface VisitaDao {
+
+    @Upsert
+    suspend fun upsertVisitas(visitas: List<VisitaEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVisitas(visitas: List<VisitaEntity>): List<Long>
