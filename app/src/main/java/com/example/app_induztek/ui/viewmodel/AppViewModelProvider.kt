@@ -10,7 +10,7 @@ object AppViewModelProvider {
     val Factory: ViewModelProvider.Factory = viewModelFactory {
         initializer {
             val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
-            LoginViewModel(app.container.repository, app.container.session)
+            LoginViewModel(app.container.repository, app.container.session, app.container.messages)
         }
         initializer {
             val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
@@ -35,6 +35,14 @@ object AppViewModelProvider {
         initializer {
             val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
             ClienteViewModel(app.container.repository, app.container.session, app.container.messages)
+        }
+        initializer {
+            val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
+            SupervisorViewModel(app.container.repository, app.container.session, app.container.messages)
+        }
+        initializer {
+            val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as InduztekApplication
+            RegistroTerrenoViewModel(app.container.repository, app.container.session, app.container.messages)
         }
     }
 }

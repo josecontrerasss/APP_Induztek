@@ -1,5 +1,8 @@
 package com.example.app_induztek
 
+import com.example.app_induztek.ui.screens.supervisor.SupervisorScreen
+import com.example.app_induztek.ui.viewmodel.SupervisorViewModel
+import com.example.app_induztek.ui.viewmodel.RegistroTerrenoViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -72,6 +75,7 @@ fun MainNavigationRoot(
     registroViewModel: RegistroViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val currentUser by loginViewModel.currentUser.collectAsStateWithLifecycle()
+    val rolActual by loginViewModel.currentRole.collectAsStateWithLifecycle()
     var destino by remember { mutableStateOf(AuthDestino.LOGIN) }
 
     AnimatedContent(
@@ -80,11 +84,12 @@ fun MainNavigationRoot(
             val haciaAdelante = targetState.second.ordinal >= initialState.second.ordinal
             val direccion = if (haciaAdelante) 1 else -1
             (fadeIn(tween(250)) + slideInHorizontally(tween(300)) { ancho -> direccion * ancho / 4 }) togetherWith
-                (fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { ancho -> -direccion * ancho / 4 })
+                    (fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { ancho -> -direccion * ancho / 4 })
         },
         label = "AuthFlow"
     ) { (user, pantalla) ->
         when {
+            user != null && rolActual == UserRole.SUPERVISOR -> SupervisorRaiz()
             user != null -> InduztekApp(user = user)
             pantalla == AuthDestino.REGISTRO -> {
                 BackHandler { destino = AuthDestino.LOGIN }
@@ -114,11 +119,40 @@ fun MainNavigationRoot(
 }
 
 @Composable
+fun SupervisorRaiz(
+    supervisorViewModel: SupervisorViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    shellViewModel: ShellViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val estado by supervisorViewModel.uiState.collectAsStateWithLifecycle()
+    val confirmacion by shellViewModel.confirmacion.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) { supervisorViewModel.cargar() }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        SupervisorScreen(
+            nombre = supervisorViewModel.nombreSupervisor,
+            estado = estado,
+            onSeleccionarCliente = supervisorViewModel::seleccionarCliente,
+            onSeleccionarTecnico = supervisorViewModel::seleccionarTecnico,
+            onAsignar = supervisorViewModel::asignar,
+            onEliminar = supervisorViewModel::eliminar,
+            onRecargar = supervisorViewModel::cargar,
+            onCerrarSesion = supervisorViewModel::cerrarSesion
+        )
+        ConfirmacionAnimada(
+            mensaje = confirmacion,
+            onTerminar = { shellViewModel.limpiarConfirmacion() }
+        )
+    }
+}
+
+@Composable
 fun InduztekApp(
     user: UsuarioEntity,
     shellViewModel: ShellViewModel = viewModel(factory = AppViewModelProvider.Factory),
     medicionViewModel: MedicionViewModel = viewModel(factory = AppViewModelProvider.Factory),
     tecnicoViewModel: TecnicoViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    registroTerrenoViewModel: RegistroTerrenoViewModel = viewModel(factory = AppViewModelProvider.Factory),
     clienteViewModel: ClienteViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val currentRole by shellViewModel.currentRole.collectAsStateWithLifecycle()
@@ -166,6 +200,7 @@ fun InduztekApp(
             ClienteTab.DESCARGAS -> "Descargas PDF"
             ClienteTab.PERFIL -> "Perfil Empresa"
         }
+        UserRole.SUPERVISOR -> "Supervisor"
     }
 
     Scaffold(
@@ -200,6 +235,7 @@ fun InduztekApp(
                         onTabSelected = { shellViewModel.setClienteTab(it) }
                     )
                 }
+                UserRole.SUPERVISOR -> Unit
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -216,7 +252,7 @@ fun InduztekApp(
                     val hacia = if (targetState.first == UserRole.TECNICO) targetState.second.ordinal else targetState.third.ordinal
                     val direccion = if (hacia >= desde) 1 else -1
                     (fadeIn(tween(220)) + slideInHorizontally(tween(260)) { ancho -> direccion * ancho / 6 }) togetherWith
-                        fadeOut(tween(160))
+                            fadeOut(tween(160))
                 },
                 label = "Pestanas"
             ) { (rol, tabTecnico, tabCliente) ->
@@ -225,6 +261,7 @@ fun InduztekApp(
                         when (tabTecnico) {
                             TecnicoTab.INICIO -> TecnicoInicioScreen(
                                 viewModel = tecnicoViewModel,
+                                registroViewModel = registroTerrenoViewModel,
                                 onNavigateToMediciones = { shellViewModel.setTecnicoTab(TecnicoTab.MEDICIONES) }
                             )
                             TecnicoTab.MEDICIONES -> TecnicoMedicionScreen(
@@ -233,7 +270,7 @@ fun InduztekApp(
                                 onSincronizar = { tecnicoViewModel.sincronizarProtocolos() },
                                 onLogout = { shellViewModel.cerrarSesion() }
                             )
-                            TecnicoTab.EQUIPOS -> TecnicoEquiposScreen(viewModel = tecnicoViewModel)
+                            TecnicoTab.EQUIPOS -> TecnicoEquiposScreen(viewModel = tecnicoViewModel, registroViewModel = registroTerrenoViewModel)
                             TecnicoTab.SINCRONIZAR -> TecnicoSincronizacionScreen(viewModel = tecnicoViewModel)
                             TecnicoTab.MAS -> TecnicoMasScreen(viewModel = tecnicoViewModel)
                         }
@@ -246,6 +283,7 @@ fun InduztekApp(
                             ClienteTab.PERFIL -> ClientePerfilScreen(viewModel = clienteViewModel)
                         }
                     }
+                    UserRole.SUPERVISOR -> Unit
                 }
             }
 

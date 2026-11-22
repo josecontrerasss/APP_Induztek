@@ -2,7 +2,8 @@ package com.example.app_induztek.ui.viewmodel
 
 enum class UserRole {
     TECNICO,
-    CLIENTE
+    CLIENTE,
+    SUPERVISOR
 }
 
 enum class TecnicoTab {
@@ -41,15 +42,12 @@ data class TecnicoFormState(
     val corriente: String = "",
     val resistenciaAislamiento: String = ">",
     val temperaturaAceite: String = "",
-    val humedad: String = "",
     val observaciones: String = "Equipo operando en condiciones normales.",
     val isTensionPrimarioOk: Boolean = true,
     val isTensionSecundarioOk: Boolean = true,
     val isCorrienteOk: Boolean = true,
     val isResistenciaOk: Boolean = true,
-    val isTemperaturaOk: Boolean = true,
-    val isHumedadOk: Boolean = true,
-    val isTemperaturaAlerta: Boolean = false,
+    val isTemperaturaAlerta: Boolean = true,
     val latitud: String = "",
     val longitud: String = "",
     val fotoPath: String? = null,

@@ -1,16 +1,16 @@
 package com.example.app_induztek.ui.viewmodel
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import com.example.app_induztek.data.repository.InduztekRepository
+import com.example.app_induztek.data.repository.ResultadoRecuperacion
 import com.example.app_induztek.di.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import android.util.Patterns
-import com.example.app_induztek.data.repository.ResultadoRecuperacion
 
 class LoginViewModel(
     private val repository: InduztekRepository,
@@ -45,7 +45,11 @@ class LoginViewModel(
             val usuario = repository.autenticar(email, password)
             if (usuario != null) {
                 val rolCodigo = repository.getRolDeUsuario(usuario.id_usuario)
-                val rol = if (rolCodigo == "CLIENTE") UserRole.CLIENTE else UserRole.TECNICO
+                val rol = when (rolCodigo) {
+                    InduztekRepository.ROL_CLIENTE -> UserRole.CLIENTE
+                    InduztekRepository.ROL_SUPERVISOR -> UserRole.SUPERVISOR
+                    else -> UserRole.TECNICO
+                }
                 session.login(usuario, rol)
                 _uiState.value = _uiState.value.copy(password = "", error = null, isLoggingIn = false)
             } else {
