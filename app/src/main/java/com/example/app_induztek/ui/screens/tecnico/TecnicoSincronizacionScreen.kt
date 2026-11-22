@@ -52,21 +52,21 @@ fun TecnicoSincronizacionScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tienes $pendientes protocolos pendientes de marcar",
+                        text = "Tienes $pendientes protocolo(s) pendientes de enviar",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "La sincronización es local: los protocolos se marcan como sincronizados en este dispositivo.",
+                        text = "Al sincronizar, los protocolos guardados en el teléfono se envían al servidor de Induztek. Si no hay conexión, quedan guardados para enviarlos después.",
                         fontSize = 12.sp,
                         color = Color.DarkGray,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     BotonPrincipalInduztek(
-                        texto = "MARCAR COMO SINCRONIZADO (MODO LOCAL)",
+                        texto = "SINCRONIZAR CON EL SERVIDOR",
                         onClick = { viewModel.sincronizarProtocolos() }
                     )
                 }
@@ -157,7 +157,7 @@ fun TecnicoSincronizacionScreen(
                 )
 
                 Text(
-                    text = "Todos tus protocolos ya están marcados como sincronizados en este dispositivo.",
+                    text = "Todos tus protocolos ya fueron enviados al servidor.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp),

@@ -1,5 +1,8 @@
 package com.example.app_induztek.ui.screens.tecnico
 
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.filled.AddBusiness
+import com.example.app_induztek.ui.viewmodel.RegistroTerrenoViewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,8 +30,19 @@ import java.util.Locale
 @Composable
 fun TecnicoInicioScreen(
     viewModel: TecnicoViewModel,
+    registroViewModel: RegistroTerrenoViewModel,
     onNavigateToMediciones: () -> Unit
 ) {
+    val formInstalacion by registroViewModel.instalacionForm.collectAsStateWithLifecycle()
+
+    RegistrarInstalacionDialog(
+        estado = formInstalacion,
+        onSeleccionarEmpresa = registroViewModel::seleccionarEmpresa,
+        onCambio = registroViewModel::onInstalacionChange,
+        onGuardar = registroViewModel::guardarInstalacion,
+        onCerrar = registroViewModel::cerrarRegistroInstalacion
+    )
+
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val pendientes by viewModel.pendientesSyncCount.collectAsStateWithLifecycle()
     val instalaciones by viewModel.instalacionesAsignadas.collectAsStateWithLifecycle()
@@ -211,6 +225,18 @@ fun TecnicoInicioScreen(
             Icon(Icons.Default.Analytics, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Registrar Nueva Medición", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+
+        OutlinedButton(
+            onClick = registroViewModel::abrirRegistroInstalacion,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.AddBusiness, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Registrar Instalación", fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

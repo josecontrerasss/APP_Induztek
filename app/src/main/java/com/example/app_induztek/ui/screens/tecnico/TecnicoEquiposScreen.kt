@@ -1,5 +1,10 @@
 package com.example.app_induztek.ui.screens.tecnico
 
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import com.example.app_induztek.ui.viewmodel.RegistroTerrenoViewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,8 +30,24 @@ import com.example.app_induztek.ui.viewmodel.TecnicoViewModel
 
 @Composable
 fun TecnicoEquiposScreen(
-    viewModel: TecnicoViewModel
+    viewModel: TecnicoViewModel,
+    registroViewModel: RegistroTerrenoViewModel
 ) {
+    val formEquipo by registroViewModel.equipoForm.collectAsStateWithLifecycle()
+    val instalacionesRegistro by registroViewModel.instalaciones.collectAsStateWithLifecycle()
+    val tipos by registroViewModel.tiposEquipo.collectAsStateWithLifecycle()
+
+    RegistrarEquipoDialog(
+        estado = formEquipo,
+        instalaciones = instalacionesRegistro,
+        tipos = tipos,
+        onSeleccionarInstalacion = registroViewModel::seleccionarInstalacion,
+        onSeleccionarTipo = registroViewModel::seleccionarTipoEquipo,
+        onCambio = registroViewModel::onEquipoChange,
+        onGuardar = registroViewModel::guardarEquipo,
+        onCerrar = registroViewModel::cerrarRegistroEquipo
+    )
+
     val equipos by viewModel.equiposAsignados.collectAsStateWithLifecycle()
     val instalaciones by viewModel.instalacionesAsignadas.collectAsStateWithLifecycle()
     var busqueda by remember { mutableStateOf("") }
@@ -61,6 +82,16 @@ fun TecnicoEquiposScreen(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
+        OutlinedButton(
+            onClick = registroViewModel::abrirRegistroEquipo,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Registrar Equipo", fontWeight = FontWeight.Bold)
+        }
 
         OutlinedTextField(
             value = busqueda,
