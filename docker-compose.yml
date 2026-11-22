@@ -1,0 +1,11 @@
+services:
+  android-build:
+    build: .
+    environment:
+      - MAPS_API_KEY=${MAPS_API_KEY:-}
+    volumes:
+      - ./salida:/out
+      - gradle-cache:/root/.gradle
+
+volumes:
+  gradle-cache:
