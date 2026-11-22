@@ -84,7 +84,7 @@ fun MainNavigationRoot(
             val haciaAdelante = targetState.second.ordinal >= initialState.second.ordinal
             val direccion = if (haciaAdelante) 1 else -1
             (fadeIn(tween(250)) + slideInHorizontally(tween(300)) { ancho -> direccion * ancho / 4 }) togetherWith
-                    (fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { ancho -> -direccion * ancho / 4 })
+                (fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { ancho -> -direccion * ancho / 4 })
         },
         label = "AuthFlow"
     ) { (user, pantalla) ->
@@ -252,7 +252,7 @@ fun InduztekApp(
                     val hacia = if (targetState.first == UserRole.TECNICO) targetState.second.ordinal else targetState.third.ordinal
                     val direccion = if (hacia >= desde) 1 else -1
                     (fadeIn(tween(220)) + slideInHorizontally(tween(260)) { ancho -> direccion * ancho / 6 }) togetherWith
-                            fadeOut(tween(160))
+                        fadeOut(tween(160))
                 },
                 label = "Pestanas"
             ) { (rol, tabTecnico, tabCliente) ->
