@@ -1,5 +1,6 @@
 package com.example.app_induztek.ui.viewmodel
 
+import com.example.app_induztek.ui.util.FiltrosEntrada
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -68,27 +69,31 @@ class PerfilViewModel(
     }
 
     fun onPerfilNombreChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(nombre = value, nombreError = null)
+        _perfilEdit.value = _perfilEdit.value.copy(nombre = filtrarNombre(value), nombreError = null)
     }
 
+    private fun filtrarNombre(valor: String): String =
+        if (session.role.value == UserRole.CLIENTE) FiltrosEntrada.razonSocial(valor)
+        else FiltrosEntrada.soloLetras(valor, FiltrosEntrada.MAX_NOMBRE_PERSONA)
+
     fun onPerfilCorreoChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(correo = value, correoError = null)
+        _perfilEdit.value = _perfilEdit.value.copy(correo = FiltrosEntrada.correo(value), correoError = null)
     }
 
     fun onPerfilTelefonoChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(telefono = value, telefonoError = null)
+        _perfilEdit.value = _perfilEdit.value.copy(telefono = FiltrosEntrada.telefono(value), telefonoError = null)
     }
 
     fun onPerfilGiroChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(giro = value)
+        _perfilEdit.value = _perfilEdit.value.copy(giro = FiltrosEntrada.soloLetras(value, FiltrosEntrada.MAX_RAZON_SOCIAL))
     }
 
     fun onPerfilContactoNombreChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(contactoNombre = value)
+        _perfilEdit.value = _perfilEdit.value.copy(contactoNombre = FiltrosEntrada.soloLetras(value, FiltrosEntrada.MAX_NOMBRE_PERSONA))
     }
 
     fun onPerfilContactoCargoChange(value: String) {
-        _perfilEdit.value = _perfilEdit.value.copy(contactoCargo = value)
+        _perfilEdit.value = _perfilEdit.value.copy(contactoCargo = FiltrosEntrada.soloLetras(value, FiltrosEntrada.MAX_TEXTO_CORTO))
     }
 
     fun cancelarEdicionPerfil() {
@@ -147,19 +152,19 @@ class PerfilViewModel(
     }
 
     fun onClaveActualChange(valor: String) {
-        _cambioClave.value = _cambioClave.value.copy(claveActual = valor, claveActualError = null)
+        _cambioClave.value = _cambioClave.value.copy(claveActual = FiltrosEntrada.clave(valor), claveActualError = null)
     }
 
     fun onClaveNuevaChange(valor: String) {
         _cambioClave.value = _cambioClave.value.copy(
-            claveNueva = valor,
-            requisitos = PasswordPolicy.evaluar(valor),
+            claveNueva = FiltrosEntrada.clave(valor),
+            requisitos = PasswordPolicy.evaluar(FiltrosEntrada.clave(valor)),
             claveNuevaError = null
         )
     }
 
     fun onConfirmarClaveChange(valor: String) {
-        _cambioClave.value = _cambioClave.value.copy(confirmarClave = valor, confirmarError = null)
+        _cambioClave.value = _cambioClave.value.copy(confirmarClave = FiltrosEntrada.clave(valor), confirmarError = null)
     }
 
     fun guardarClave() {

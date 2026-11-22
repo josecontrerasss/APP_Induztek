@@ -1,5 +1,6 @@
 package com.example.app_induztek.ui.viewmodel
 
+import com.example.app_induztek.ui.util.FiltrosEntrada
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,27 +22,27 @@ class RegistroViewModel(
     val uiState: StateFlow<RegistroUiState> = _uiState.asStateFlow()
 
     fun onRutChange(valor: String) {
-        _uiState.value = calcularErrores(_uiState.value.copy(rut = valor, mensajeError = null))
+        _uiState.value = calcularErrores(_uiState.value.copy(rut = FiltrosEntrada.rut(valor), mensajeError = null))
     }
 
     fun onNombreChange(valor: String) {
-        _uiState.value = calcularErrores(_uiState.value.copy(nombre = valor, mensajeError = null))
+        _uiState.value = calcularErrores(_uiState.value.copy(nombre = FiltrosEntrada.razonSocial(valor), mensajeError = null))
     }
 
     fun onCorreoChange(valor: String) {
-        _uiState.value = calcularErrores(_uiState.value.copy(correo = valor, mensajeError = null))
+        _uiState.value = calcularErrores(_uiState.value.copy(correo = FiltrosEntrada.correo(valor), mensajeError = null))
     }
 
     fun onTelefonoChange(valor: String) {
-        _uiState.value = calcularErrores(_uiState.value.copy(telefono = valor, mensajeError = null))
+        _uiState.value = calcularErrores(_uiState.value.copy(telefono = FiltrosEntrada.telefono(valor), mensajeError = null))
     }
 
     fun onContrasenaChange(valor: String) {
-        _uiState.value = calcularErrores(_uiState.value.copy(contrasena = valor, mensajeError = null))
+        _uiState.value = calcularErrores(_uiState.value.copy(contrasena = FiltrosEntrada.clave(valor), mensajeError = null))
     }
 
     fun onConfirmarContrasenaChange(valor: String) {
-        _uiState.value = calcularErrores(_uiState.value.copy(confirmarContrasena = valor, mensajeError = null))
+        _uiState.value = calcularErrores(_uiState.value.copy(confirmarContrasena = FiltrosEntrada.clave(valor), mensajeError = null))
     }
 
     fun registrarCliente() {

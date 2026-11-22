@@ -39,5 +39,13 @@ data class RecuperarClaveUiState(
     val correoError: String? = null,
     val enviando: Boolean = false,
     val mensaje: String? = null,
-    val exito: Boolean = false
+    val exito: Boolean = false,
+    val codigo: String = "",
+    val claveNueva: String = "",
+    val confirmarClave: String = "",
+    val requisitos: PasswordPolicy.Resultado = PasswordPolicy.evaluar(""),
+    val codigoError: String? = null,
+    val claveNuevaError: String? = null,
+    val confirmarError: String? = null,
+    val restablecido: Boolean = false
 )

@@ -1,6 +1,7 @@
 package com.example.app_induztek.di
 
 import com.example.app_induztek.data.local.entities.UsuarioEntity
+import com.example.app_induztek.data.remote.TokenStore
 import com.example.app_induztek.ui.viewmodel.UserRole
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 
-class SessionManager {
+class SessionManager(private val tokenStore: TokenStore) {
 
     private val _user = MutableStateFlow<UsuarioEntity?>(null)
     val user: StateFlow<UsuarioEntity?> = _user.asStateFlow()
@@ -24,6 +25,7 @@ class SessionManager {
     }
 
     fun logout() {
+        tokenStore.borrar(_user.value?.id_usuario)
         _user.value = null
         _role.value = UserRole.TECNICO
     }
