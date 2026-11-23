@@ -1,5 +1,6 @@
 package com.example.app_induztek.ui.viewmodel
 
+import com.example.app_induztek.ui.util.FiltrosEntrada
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_induztek.data.local.entities.EquipoEntity
@@ -127,27 +128,27 @@ class MedicionViewModel(
     }
 
     fun onTensionPrimarioChange(valor: String) {
-        _formState.value = recomputarEstados(_formState.value.copy(tensionPrimario = valor))
+        _formState.value = recomputarEstados(_formState.value.copy(tensionPrimario = FiltrosEntrada.decimal(valor, 6)))
     }
 
     fun onTensionSecundarioChange(valor: String) {
-        _formState.value = recomputarEstados(_formState.value.copy(tensionSecundario = valor))
+        _formState.value = recomputarEstados(_formState.value.copy(tensionSecundario = FiltrosEntrada.decimal(valor, 4)))
     }
 
     fun onCorrienteChange(valor: String) {
-        _formState.value = recomputarEstados(_formState.value.copy(corriente = valor))
+        _formState.value = recomputarEstados(_formState.value.copy(corriente = FiltrosEntrada.decimal(valor, 4)))
     }
 
     fun onResistenciaChange(valor: String) {
-        _formState.value = recomputarEstados(_formState.value.copy(resistenciaAislamiento = valor))
+        _formState.value = recomputarEstados(_formState.value.copy(resistenciaAislamiento = FiltrosEntrada.decimal(valor, 5)))
     }
 
     fun onTemperaturaChange(valor: String) {
-        _formState.value = recomputarEstados(_formState.value.copy(temperaturaAceite = valor))
+        _formState.value = recomputarEstados(_formState.value.copy(temperaturaAceite = FiltrosEntrada.decimal(valor, 3)))
     }
 
     fun onHumedadChange(valor: String) {
-        _formState.value = recomputarEstados(_formState.value.copy(humedad = valor))
+        _formState.value = recomputarEstados(_formState.value.copy(humedad = FiltrosEntrada.decimal(valor, 3)))
     }
 
     fun onObservacionesChange(valor: String) {

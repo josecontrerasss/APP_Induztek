@@ -8,6 +8,7 @@ import com.example.app_induztek.data.local.entities.MedicionEntity
 import com.example.app_induztek.data.local.entities.ProtocoloEntity
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import com.example.app_induztek.data.repository.InduztekRepository
+import com.example.app_induztek.data.repository.ResultadoSync
 import com.example.app_induztek.di.SessionManager
 import com.example.app_induztek.di.UserMessages
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -93,8 +94,21 @@ class TecnicoViewModel(
     fun sincronizarProtocolos() {
         val usuario = session.user.value ?: return
         viewModelScope.launch {
-            repository.sincronizarProtocolos(usuario.id_usuario)
-            messages.confirmar("Sincronización completada")
+            when (val resultado = repository.sincronizarProtocolos(usuario.id_usuario)) {
+                is ResultadoSync.Exito -> {
+                    if (resultado.sincronizados > 0) {
+                        messages.confirmar("Sincronización completada\n${resultado.sincronizados} protocolo(s) enviados")
+                    }
+                    if (resultado.rechazados.isNotEmpty()) {
+                        messages.show("No se enviaron:\n" + resultado.rechazados.joinToString("\n"))
+                    }
+                }
+                is ResultadoSync.NadaPendiente -> messages.show("No hay protocolos pendientes. Datos actualizados.")
+                is ResultadoSync.SinConexion -> messages.show("Sin conexión. Los protocolos quedan guardados y podrás sincronizar después.")
+                is ResultadoSync.SesionExpirada -> messages.show("Para sincronizar, cierra sesión y vuelve a entrar con internet.")
+                is ResultadoSync.Error -> messages.show(resultado.mensaje)
+            }
+            repository.actualizarDatosTecnico(usuario.id_usuario)
         }
     }
 }
