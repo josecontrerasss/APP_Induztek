@@ -114,7 +114,8 @@ data class ProtocoloDto(
     val estado: String?,
     val resultado: String,
     val sincronizado: Boolean?,
-    val fotoPath: String?
+    val fotoPath: String?,
+    val idCliente: Int? = null
 )
 
 data class MedicionDto(

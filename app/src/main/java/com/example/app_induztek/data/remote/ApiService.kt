@@ -99,6 +99,18 @@ interface ApiService {
     @POST("instalaciones/{id}/equipos")
     suspend fun crearEquipo(@Path("id") id: Int, @Body request: EquipoCrearDto): Response<EquipoDto>
 
+    @GET("clientes/{id}/tecnicos")
+    suspend fun tecnicosCliente(@Path("id") id: Int): Response<List<AsignacionDto>>
+
+    @GET("protocolos/pendientes")
+    suspend fun protocolosPendientes(): Response<List<ProtocoloSyncDto>>
+
+    @PUT("protocolos/{id}/aprobar")
+    suspend fun aprobarProtocolo(@Path("id") id: Int): Response<ProtocoloDto>
+
+    @PUT("protocolos/{id}/rechazar")
+    suspend fun rechazarProtocolo(@Path("id") id: Int): Response<ProtocoloDto>
+
     @POST("protocolos/sincronizar")
     suspend fun sincronizarProtocolos(@Body lista: List<ProtocoloSyncDto>): Response<SyncResponseDto>
 }

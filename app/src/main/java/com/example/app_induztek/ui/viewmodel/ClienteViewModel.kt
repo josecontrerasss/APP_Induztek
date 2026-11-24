@@ -8,6 +8,7 @@ import com.example.app_induztek.data.local.entities.MedicionEntity
 import com.example.app_induztek.data.local.entities.ProtocoloEntity
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import com.example.app_induztek.data.repository.InduztekRepository
+import com.example.app_induztek.data.repository.ResultadoRemoto
 import com.example.app_induztek.di.SessionManager
 import com.example.app_induztek.di.UserMessages
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -104,10 +105,21 @@ class ClienteViewModel(
     private val _certificadoPendiente = MutableStateFlow<CertificadoData?>(null)
     val certificadoPendiente: StateFlow<CertificadoData?> = _certificadoPendiente.asStateFlow()
 
+    private val _tecnicosAsignados = MutableStateFlow<String?>(null)
+    val tecnicosAsignados: StateFlow<String?> = _tecnicosAsignados.asStateFlow()
+
     init {
         viewModelScope.launch {
             session.user.collect { user ->
+                if (user != null && session.role.value == UserRole.CLIENTE) {
+                    _tecnicosAsignados.value = when (val resultado = repository.tecnicosAsignados(user.id_usuario)) {
+                        is ResultadoRemoto.Exito ->
+                            resultado.datos.joinToString(", ") { it.nombreTecnico }.ifBlank { "Sin técnico asignado aún" }
+                        is ResultadoRemoto.Error -> "No disponible sin conexión"
+                    }
+                }
                 if (user == null) {
+                    _tecnicosAsignados.value = null
                     _instalacionSeleccionada.value = null
                     _selectedProtocoloDetalle.value = null
                     _detalleProtocolo.value = null

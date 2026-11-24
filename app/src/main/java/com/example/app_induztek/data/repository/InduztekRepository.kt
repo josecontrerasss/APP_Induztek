@@ -273,6 +273,15 @@ class InduztekRepository(
         return resultado
     }
 
+    suspend fun tecnicosAsignados(idCliente: Int): ResultadoRemoto<List<AsignacionDto>> =
+        remote.tecnicosCliente(idCliente).comoResultado()
+
+    suspend fun protocolosPendientes(): ResultadoRemoto<List<ProtocoloSyncDto>> =
+        remote.protocolosPendientes().comoResultado()
+
+    suspend fun revisarProtocolo(id: Int, aprobar: Boolean): ResultadoRemoto<ProtocoloDto> =
+        remote.revisarProtocolo(id, aprobar).comoResultado()
+
     suspend fun actualizarDatosTecnico(idTecnico: Int) {
         if (tokenStore.token == null) return
         try {

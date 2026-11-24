@@ -137,7 +137,11 @@ fun SupervisorRaiz(
             onAsignar = supervisorViewModel::asignar,
             onEliminar = supervisorViewModel::eliminar,
             onRecargar = supervisorViewModel::cargar,
-            onCerrarSesion = supervisorViewModel::cerrarSesion
+            onCerrarSesion = supervisorViewModel::cerrarSesion,
+            onAprobarProtocolo = { supervisorViewModel.revisarProtocolo(it, aprobar = true) },
+            onRechazarProtocolo = { supervisorViewModel.revisarProtocolo(it, aprobar = false) },
+            nombreEmpresa = supervisorViewModel::nombreEmpresa,
+            nombreTecnico = supervisorViewModel::nombreTecnico
         )
         ConfirmacionAnimada(
             mensaje = confirmacion,

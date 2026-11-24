@@ -3,6 +3,7 @@ package com.example.app_induztek.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_induztek.data.remote.dto.AsignacionDto
+import com.example.app_induztek.data.remote.dto.ProtocoloSyncDto
 import com.example.app_induztek.data.remote.dto.UsuarioDto
 import com.example.app_induztek.data.repository.InduztekRepository
 import com.example.app_induztek.data.repository.ResultadoRemoto
@@ -17,6 +18,7 @@ data class SupervisorUiState(
     val clientes: List<UsuarioDto> = emptyList(),
     val tecnicos: List<UsuarioDto> = emptyList(),
     val asignaciones: List<AsignacionDto> = emptyList(),
+    val pendientes: List<ProtocoloSyncDto> = emptyList(),
     val idClienteSeleccionado: Int? = null,
     val idTecnicoSeleccionado: Int? = null,
     val cargando: Boolean = false,
@@ -41,11 +43,13 @@ class SupervisorViewModel(
             val clientes = repository.usuariosPorRol(InduztekRepository.ROL_CLIENTE)
             val tecnicos = repository.usuariosPorRol(InduztekRepository.ROL_TECNICO)
             val asignaciones = repository.asignaciones()
-            val error = listOf(clientes, tecnicos, asignaciones).filterIsInstance<ResultadoRemoto.Error>().firstOrNull()
+            val pendientes = repository.protocolosPendientes()
+            val error = listOf(clientes, tecnicos, asignaciones, pendientes).filterIsInstance<ResultadoRemoto.Error>().firstOrNull()
             _uiState.value = _uiState.value.copy(
                 clientes = (clientes as? ResultadoRemoto.Exito)?.datos ?: _uiState.value.clientes,
                 tecnicos = (tecnicos as? ResultadoRemoto.Exito)?.datos ?: _uiState.value.tecnicos,
                 asignaciones = (asignaciones as? ResultadoRemoto.Exito)?.datos ?: _uiState.value.asignaciones,
+                pendientes = (pendientes as? ResultadoRemoto.Exito)?.datos ?: _uiState.value.pendientes,
                 cargando = false,
                 error = error?.mensaje
             )
@@ -99,6 +103,26 @@ class SupervisorViewModel(
             }
         }
     }
+
+    fun revisarProtocolo(idProtocolo: Int, aprobar: Boolean) {
+        viewModelScope.launch {
+            when (val resultado = repository.revisarProtocolo(idProtocolo, aprobar)) {
+                is ResultadoRemoto.Exito -> {
+                    _uiState.value = _uiState.value.copy(
+                        pendientes = _uiState.value.pendientes.filterNot { it.protocolo.idProtocolo == idProtocolo }
+                    )
+                    messages.confirmar(if (aprobar) "Protocolo aprobado\n${resultado.datos.numero}" else "Protocolo rechazado\n${resultado.datos.numero}")
+                }
+                is ResultadoRemoto.Error -> _uiState.value = _uiState.value.copy(error = resultado.mensaje)
+            }
+        }
+    }
+
+    fun nombreEmpresa(idCliente: Int?): String =
+        _uiState.value.clientes.firstOrNull { it.idUsuario == idCliente }?.nombre ?: "Empresa #${idCliente ?: "-"}"
+
+    fun nombreTecnico(idTecnico: Int): String =
+        _uiState.value.tecnicos.firstOrNull { it.idUsuario == idTecnico }?.nombre ?: "Técnico #$idTecnico"
 
     fun cerrarSesion() {
         session.logout()

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Engineering
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -166,6 +167,7 @@ fun ClientePerfilScreen(
     perfilViewModel: PerfilViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val perfil by viewModel.perfil.collectAsStateWithLifecycle()
+    val tecnicosAsignados by viewModel.tecnicosAsignados.collectAsStateWithLifecycle()
     val perfilEdit by perfilViewModel.perfilEdit.collectAsStateWithLifecycle()
     var mostrarCambioClave by remember { mutableStateOf(false) }
 
@@ -208,6 +210,7 @@ fun ClientePerfilScreen(
                 } else {
                     PerfilModoLectura(
                         perfil = perfil,
+                        tecnicosAsignados = tecnicosAsignados,
                         onEditar = { perfilViewModel.iniciarEdicionPerfil() },
                         onCambiarClave = { mostrarCambioClave = true }
                     )
@@ -220,6 +223,7 @@ fun ClientePerfilScreen(
 @Composable
 private fun PerfilModoLectura(
     perfil: UsuarioEntity?,
+    tecnicosAsignados: String?,
     onEditar: () -> Unit,
     onCambiarClave: () -> Unit
 ) {
@@ -275,8 +279,14 @@ private fun PerfilModoLectura(
             if (contactoCargo != null) add("($contactoCargo)")
         }.joinToString(" ")
         PerfilItem(
+            icon = Icons.Default.Engineering,
+            title = "Técnico Responsable Induztek",
+            subtitle = tecnicosAsignados ?: "Cargando..."
+        )
+
+        PerfilItem(
             icon = Icons.Default.Person,
-            title = "Contacto Técnico Responsable",
+            title = "Contacto en la Empresa",
             subtitle = contacto.ifBlank { "No informado" }
         )
 

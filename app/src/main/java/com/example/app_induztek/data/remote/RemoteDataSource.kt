@@ -90,6 +90,13 @@ class RemoteDataSource(private val api: ApiService) {
     suspend fun crearEquipo(idInstalacion: Int, request: EquipoCrearDto): ApiResult<EquipoDto> =
         safeCall { api.crearEquipo(idInstalacion, request) }
 
+    suspend fun tecnicosCliente(id: Int): ApiResult<List<AsignacionDto>> = safeCall { api.tecnicosCliente(id) }
+
+    suspend fun protocolosPendientes(): ApiResult<List<ProtocoloSyncDto>> = safeCall { api.protocolosPendientes() }
+
+    suspend fun revisarProtocolo(id: Int, aprobar: Boolean): ApiResult<ProtocoloDto> =
+        safeCall { if (aprobar) api.aprobarProtocolo(id) else api.rechazarProtocolo(id) }
+
     private suspend fun <T : Any> safeCall(
         respaldo: T? = null,
         call: suspend () -> Response<T>

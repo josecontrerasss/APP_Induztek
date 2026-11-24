@@ -1,5 +1,11 @@
 package com.example.app_induztek.ui.screens.supervisor
 
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.Tab
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -48,8 +54,14 @@ fun SupervisorScreen(
     onAsignar: () -> Unit,
     onEliminar: (Int) -> Unit,
     onRecargar: () -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    onAprobarProtocolo: (Int) -> Unit,
+    onRechazarProtocolo: (Int) -> Unit,
+    nombreEmpresa: (Int?) -> String,
+    nombreTecnico: (Int) -> String
 ) {
+    var pestana by rememberSaveable { mutableIntStateOf(0) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -75,10 +87,23 @@ fun SupervisorScreen(
             )
         }
     ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+        PrimaryTabRow(selectedTabIndex = pestana) {
+            Tab(selected = pestana == 0, onClick = { pestana = 0 }, text = { Text("Asignaciones") })
+            Tab(selected = pestana == 1, onClick = { pestana = 1 }, text = { Text("Protocolos (${estado.pendientes.size})") })
+        }
+        if (pestana == 1) {
+            ProtocolosPendientesLista(
+                pendientes = estado.pendientes,
+                nombreEmpresa = nombreEmpresa,
+                nombreTecnico = nombreTecnico,
+                onAprobar = onAprobarProtocolo,
+                onRechazar = onRechazarProtocolo
+            )
+        } else
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -186,6 +211,7 @@ fun SupervisorScreen(
                     }
                 }
             }
+        }
         }
     }
 }
