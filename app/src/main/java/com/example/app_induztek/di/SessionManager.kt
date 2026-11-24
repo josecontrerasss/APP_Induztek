@@ -20,8 +20,8 @@ class SessionManager(private val tokenStore: TokenStore) {
     val role: StateFlow<UserRole> = _role.asStateFlow()
 
     fun login(usuario: UsuarioEntity, role: UserRole) {
-        _user.value = usuario
         _role.value = role
+        _user.value = usuario
     }
 
     fun logout() {

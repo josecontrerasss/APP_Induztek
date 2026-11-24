@@ -336,7 +336,10 @@ class InduztekRepository(
         protocolos.forEach { protocolo ->
             val local = protocoloDao.getPorNumero(protocolo.numero)
             if (local != null) {
-                if (!local.sincronizado) protocoloDao.updateProtocolo(local.copy(sincronizado = true))
+                val estado = protocolo.estado ?: local.estado
+                if (!local.sincronizado || local.estado != estado) {
+                    protocoloDao.updateProtocolo(local.copy(sincronizado = true, estado = estado))
+                }
                 return@forEach
             }
             val detalle = remote.detalleProtocolo(protocolo.idProtocolo).datos() ?: return@forEach

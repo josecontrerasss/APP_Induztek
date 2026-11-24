@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -187,7 +188,7 @@ fun TecnicoMedicionScreen(
             }
         } else {
             Text("Subestación y Equipo:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextoOscuro)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 instalaciones.forEach { inst ->
                     FilterChip(
                         selected = selInstalacion == inst.id_instalacion,
@@ -205,7 +206,7 @@ fun TecnicoMedicionScreen(
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
             } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     equiposDeInstalacion.forEach { eq ->
                         FilterChip(
                             selected = selEquipo == eq.id_equipo,
@@ -436,9 +437,9 @@ private fun CampoMedicion(
         },
         label = { Text(label, color = TextoSecundario) },
         suffix = { Text(unidad, fontWeight = FontWeight.Bold, color = TextoOscuro) },
-        trailingIcon = {
-            Icon(imageVector = icono, contentDescription = null, tint = tintIcono)
-        },
+        trailingIcon = if (valor.any { it.isDigit() } || mostrarError) {
+            { Icon(imageVector = icono, contentDescription = null, tint = tintIcono) }
+        } else null,
         supportingText = if (mostrarError) {
             { Text(mensajeError, color = ErrorRojo) }
         } else null,

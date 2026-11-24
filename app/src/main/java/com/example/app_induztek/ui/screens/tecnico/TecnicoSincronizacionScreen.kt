@@ -108,7 +108,7 @@ fun TecnicoSincronizacionScreen(
                                     modifier = Modifier.weight(1f)
                                 )
                                 Text(
-                                    text = protocolo.resultado,
+                                    text = if (protocolo.resultado == "APROBADO") "Valores conformes" else "Con observaciones",
                                     fontWeight = FontWeight.Bold,
                                     color = if (protocolo.resultado == "APROBADO") Color(0xFF4CAF50) else Color(0xFFFB8C00)
                                 )
