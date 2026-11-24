@@ -1,36 +1,51 @@
 # APP_Induztek
 
-App Android (Kotlin, Jetpack Compose, Material 3) para registrar mediciones eléctricas en terreno y consultar protocolos por parte del cliente.
+App Android (Kotlin, Jetpack Compose, Material 3) para registrar protocolos de pruebas eléctricas en terreno. El técnico mide y sincroniza, el supervisor revisa y aprueba, y el cliente consulta y descarga sus certificados en PDF.
+
+## Roles
+| Rol | Qué hace en la app |
+|---|---|
+| Técnico | Registra mediciones con validación, GPS y foto; funciona sin internet y sincroniza después. Registra instalaciones y equipos en terreno para las empresas que tiene asignadas. |
+| Supervisor | Asigna técnicos a empresas y aprueba o rechaza los protocolos que llegan desde terreno. |
+| Cliente | Ve sus instalaciones, equipos, protocolos y técnico asignado; descarga el certificado PDF de los protocolos aprobados; edita su perfil y su contraseña. |
 
 ## Arquitectura
-- MVVM con un ViewModel por área: Auth, Shell, Medicion, Tecnico y Cliente, creados con `AppViewModelProvider`.
+- MVVM con un ViewModel por funcionalidad, creados con `AppViewModelProvider`.
 - Inyección manual: `InduztekApplication` crea `AppContainer` (base de datos, repositorio, sesión y mensajes).
-- Room 2.8 con migraciones escritas (versión 5, esquema exportado en `app/schemas`). Contraseñas con PBKDF2 y sal por usuario.
-- Navegación por pestañas según el rol (técnico o cliente).
+- Room 2.8 con un DAO por entidad y migraciones escritas (versión 7, esquemas exportados en `app/schemas`). Contraseñas locales con PBKDF2 y sal por usuario.
+- Repositorio híbrido: primero consulta el backend y guarda una copia en Room. Si no hay conexión, el login y los datos funcionan con lo guardado en el teléfono.
+- Retrofit + OkHttp + Gson con token JWT, guardado por usuario.
+- Navegación según el rol: pestañas para técnico y cliente, pantalla propia para el supervisor.
 
-## Backend (pendiente)
-La capa remota está lista en `data/remote` (Retrofit + OkHttp + Gson) para una API REST en Spring Boot. La URL se configura en `local.properties` con `API_BASE_URL=http://10.0.2.2:8080/api/` (por defecto apunta al localhost del PC desde el emulador).
+## Backend
+Los microservicios están en el repositorio [microservicios_induztek](https://github.com/josecontrerasss/microservicios_induztek) (Spring Boot, MySQL y Docker). Se levantan con:
+
+```
+docker compose up --build -d
+```
+
+La app se conecta al API Gateway en el puerto 8080. La URL se configura en `local.properties`:
+
+```
+API_BASE_URL=http://10.0.2.2:8080/api/
+```
+
 
 | Método | Ruta | Uso |
 |---|---|---|
-| POST | auth/login | Inicio de sesión, devuelve token y usuario |
-| POST | auth/registro | Registro de cliente |
-| POST | auth/recuperar-clave | Envía el correo de recuperación (202 sin cuerpo) |
-| PUT | usuarios/{id} | Actualiza el perfil |
-| GET | clientes/{id}/instalaciones | Instalaciones del cliente |
-| GET | clientes/{id}/protocolos | Protocolos del cliente |
-| GET | instalaciones/{id}/equipos | Equipos de una instalación |
-| POST | protocolos/sincronizar | Sube protocolos y mediciones pendientes |
-
-## Funciones
-- Técnico: formulario de mediciones con validación numérica, GPS, foto, humedad, equipos por instalación, sincronización local.
-- Registro con repetir contraseña, mínimo 8 caracteres, 1 número y 1 carácter especial, y validación de RUT.
-- Recuperación de contraseña conectada a la API (muestra aviso mientras el backend no exista).
-- Cliente: sus centrales (3 visibles, el resto por búsqueda), edición de perfil, con detalle de equipos y protocolos, historial, certificado PDF y perfil de empresa.
+| POST | auth/login · auth/registro | Inicio de sesión y registro de cliente |
+| POST | auth/recuperar-clave · auth/restablecer-clave | Código de 6 dígitos por correo y nueva contraseña |
+| PUT | usuarios/{id} · usuarios/{id}/clave | Editar perfil y cambiar contraseña |
+| GET | clientes/{id}/instalaciones · visitas · protocolos · tecnicos | Datos del cliente |
+| GET | tecnicos/{id}/instalaciones · equipos · visitas · protocolos · empresas | Datos del técnico |
+| POST | instalaciones · instalaciones/{id}/equipos | Registro en terreno |
+| POST | protocolos/sincronizar | Envía los protocolos pendientes con sus mediciones |
+| GET/POST/DELETE | usuarios · asignaciones | Supervisor: técnicos, empresas y asignaciones |
+| GET/PUT | protocolos/pendientes · protocolos/{id}/aprobar · protocolos/{id}/rechazar | Supervisor: revisión de protocolos |
 
 ## Compilar
-1. Crear `local.properties` con `MAPS_API_KEY=tu_key`.
-2. Abrir en Android Studio y ejecutar, o usar Docker:
+1. Levantar el backend (ver arriba) y crear `local.properties` con `API_BASE_URL` y, si se quiere ver el mapa, `MAPS_API_KEY=tu_key`.
+2. Abrir en Android Studio y ejecutar, o generar el APK con Docker:
 
 ```
 MAPS_API_KEY=tu_key docker compose run --build android-build
@@ -39,5 +54,8 @@ MAPS_API_KEY=tu_key docker compose run --build android-build
 El APK queda en la carpeta `salida/`.
 
 ## Usuarios de prueba
-- tecnico@induztek.cl / tecnico123
-- cliente@mineranorte.cl / cliente123
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Técnico | tecnico@induztek.cl | Tecnico123! |
+| Cliente | cliente@mineranorte.cl | Cliente123! |
+| Supervisor | supervisor@induztek.cl | Supervisor123! |

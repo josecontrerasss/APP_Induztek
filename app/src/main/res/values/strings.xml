@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">APP_Induztek</string>
+    <string name="app_name">Induztek</string>
 
     <string name="titulo_portal">Portal Induztek</string>
     <string name="subtitulo_login">Ingresa tus credenciales para continuar</string>
