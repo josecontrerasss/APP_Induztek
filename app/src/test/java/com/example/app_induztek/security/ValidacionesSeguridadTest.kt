@@ -35,6 +35,13 @@ class ValidacionesSeguridadTest {
     }
 
     @Test
+    fun nombreDebeTenerSoloLetrasEntreDosYTreinta() {
+        ContactoValidator.nombreValido("José") shouldBe true
+        ContactoValidator.nombreValido("Pedro2") shouldBe false
+        ContactoValidator.nombreValido("P") shouldBe false
+    }
+
+    @Test
     fun claveSinMayusculaNiNumeroNiEspecialNoCumpleLaPolitica() {
         val resultado = PasswordPolicy.evaluar("abcdefgh")
 

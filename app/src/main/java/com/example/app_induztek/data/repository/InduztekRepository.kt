@@ -1,5 +1,7 @@
 package com.example.app_induztek.data.repository
 
+import com.example.app_induztek.data.remote.dto.TecnicoCrearDto
+import com.example.app_induztek.data.remote.dto.TecnicoCreadoDto
 import android.database.sqlite.SQLiteConstraintException
 import com.example.app_induztek.data.local.AppDatabase
 import com.example.app_induztek.data.local.entities.EquipoEntity
@@ -248,6 +250,8 @@ class InduztekRepository(
     fun getTiposEquipo(): Flow<List<TipoEquipoEntity>> = tipoEquipoDao.getTiposEquipo()
 
     suspend fun usuariosPorRol(rol: String): ResultadoRemoto<List<UsuarioDto>> = remote.usuariosPorRol(rol).comoResultado()
+
+    suspend fun crearTecnico(datos: TecnicoCrearDto): ResultadoRemoto<TecnicoCreadoDto> = remote.crearTecnico(datos).comoResultado()
 
     suspend fun asignaciones(): ResultadoRemoto<List<AsignacionDto>> = remote.asignaciones().comoResultado()
 

@@ -1,5 +1,7 @@
 package com.example.app_induztek.data.remote
 
+import com.example.app_induztek.data.remote.dto.TecnicoCrearDto
+import com.example.app_induztek.data.remote.dto.TecnicoCreadoDto
 import com.example.app_induztek.data.remote.dto.AsignacionCrearDto
 import com.example.app_induztek.data.remote.dto.AsignacionDto
 import com.example.app_induztek.data.remote.dto.AuthResponseDto
@@ -74,6 +76,8 @@ class RemoteDataSource(private val api: ApiService) {
         safeCall { api.sincronizarProtocolos(lista) }
 
     suspend fun usuariosPorRol(rol: String): ApiResult<List<UsuarioDto>> = safeCall { api.usuariosPorRol(rol) }
+
+    suspend fun crearTecnico(request: TecnicoCrearDto): ApiResult<TecnicoCreadoDto> = safeCall { api.crearTecnico(request) }
 
     suspend fun asignaciones(): ApiResult<List<AsignacionDto>> = safeCall { api.asignaciones() }
 

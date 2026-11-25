@@ -27,6 +27,8 @@ object FiltrosEntrada {
     fun soloLetras(valor: String, maximo: Int): String =
         valor.filter { it.isLetter() || it == ' ' }.take(maximo)
 
+    fun palabra(valor: String, maximo: Int): String = valor.filter { it.isLetter() }.take(maximo)
+
     fun razonSocial(valor: String): String =
         valor.filter { it.isLetterOrDigit() || it in SIGNOS_RAZON_SOCIAL }.take(MAX_RAZON_SOCIAL)
 

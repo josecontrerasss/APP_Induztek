@@ -3,6 +3,9 @@ package com.example.app_induztek.iu
 import com.example.app_induztek.data.remote.TokenStore
 import com.example.app_induztek.data.remote.dto.ProtocoloDto
 import com.example.app_induztek.data.remote.dto.ProtocoloSyncDto
+import com.example.app_induztek.data.remote.dto.TecnicoCrearDto
+import com.example.app_induztek.data.remote.dto.TecnicoCreadoDto
+import com.example.app_induztek.data.remote.dto.UsuarioDto
 import com.example.app_induztek.data.repository.InduztekRepository
 import com.example.app_induztek.data.repository.ResultadoRemoto
 import com.example.app_induztek.di.SessionManager
@@ -79,5 +82,43 @@ class SupervisorViewModelTest {
         viewModel.revisarProtocolo(1, aprobar = true)
 
         viewModel.uiState.value.pendientes.map { it.protocolo.numero } shouldBe listOf("PRT-002")
+    }
+
+    @Test
+    fun crearTecnicoConDatosInvalidosMuestraErroresYNoLlamaAlServidor() {
+        viewModel.onTecnicoRutChange("11.111.111-1")
+        viewModel.onTecnicoNombreChange("P")
+        viewModel.onTecnicoApellidoChange("Soto")
+        viewModel.onTecnicoTelefonoChange("1111111")
+        viewModel.onTecnicoCorreoChange("1111@asdas.cl")
+
+        viewModel.crearTecnico()
+
+        val estado = viewModel.crearTecnicoState.value
+        estado.rutError shouldBe "RUT inválido"
+        estado.nombreError shouldBe "Solo letras, entre 2 y 30"
+        estado.apellidoError shouldBe null
+        estado.telefonoError shouldBe "Teléfono inválido. Ejemplo: +56 9 1234 5678"
+        estado.correoError shouldBe "Correo electrónico inválido"
+        coVerify(exactly = 0) { repository.crearTecnico(any()) }
+    }
+
+    @Test
+    fun crearTecnicoValidoEnviaRutFormateadoYMuestraLaClaveTemporal() {
+        val creado = UsuarioDto(20, 1, "15.234.567-4", "Pedro Soto", "pedro.soto@induztek.cl", "+56 9 8765 4321", true, null, null, null)
+        coEvery {
+            repository.crearTecnico(TecnicoCrearDto("15.234.567-4", "Pedro", "Soto", "+56 9 8765 4321", "pedro.soto@induztek.cl"))
+        } returns ResultadoRemoto.Exito(TecnicoCreadoDto(creado, "Tec123456!"))
+        viewModel.onTecnicoRutChange("152345674")
+        viewModel.onTecnicoNombreChange("Pedro")
+        viewModel.onTecnicoApellidoChange("Soto")
+        viewModel.onTecnicoTelefonoChange("+56 9 8765 4321")
+        viewModel.onTecnicoCorreoChange("Pedro.Soto@Induztek.cl")
+
+        viewModel.crearTecnico()
+
+        viewModel.crearTecnicoState.value.claveTemporal shouldBe "Tec123456!"
+        viewModel.crearTecnicoState.value.tecnicoCreado shouldBe "Pedro Soto"
+        viewModel.uiState.value.tecnicos.map { it.nombre } shouldBe listOf("Pedro Soto")
     }
 }

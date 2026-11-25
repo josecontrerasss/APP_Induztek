@@ -58,7 +58,8 @@ fun SupervisorScreen(
     onAprobarProtocolo: (Int) -> Unit,
     onRechazarProtocolo: (Int) -> Unit,
     nombreEmpresa: (Int?) -> String,
-    nombreTecnico: (Int) -> String
+    nombreTecnico: (Int) -> String,
+    pestanaTecnicos: @Composable () -> Unit
 ) {
     var pestana by rememberSaveable { mutableIntStateOf(0) }
 
@@ -91,8 +92,11 @@ fun SupervisorScreen(
         PrimaryTabRow(selectedTabIndex = pestana) {
             Tab(selected = pestana == 0, onClick = { pestana = 0 }, text = { Text("Asignaciones") })
             Tab(selected = pestana == 1, onClick = { pestana = 1 }, text = { Text("Protocolos (${estado.pendientes.size})") })
+            Tab(selected = pestana == 2, onClick = { pestana = 2 }, text = { Text("Técnicos") })
         }
-        if (pestana == 1) {
+        if (pestana == 2) {
+            pestanaTecnicos()
+        } else if (pestana == 1) {
             ProtocolosPendientesLista(
                 pendientes = estado.pendientes,
                 nombreEmpresa = nombreEmpresa,

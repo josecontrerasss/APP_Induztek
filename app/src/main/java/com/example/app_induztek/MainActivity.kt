@@ -1,6 +1,7 @@
 package com.example.app_induztek
 
 import com.example.app_induztek.ui.screens.supervisor.SupervisorScreen
+import com.example.app_induztek.ui.screens.supervisor.CrearTecnicoFormulario
 import com.example.app_induztek.ui.viewmodel.SupervisorViewModel
 import com.example.app_induztek.ui.viewmodel.RegistroTerrenoViewModel
 import android.os.Bundle
@@ -126,6 +127,7 @@ fun SupervisorRaiz(
     shellViewModel: ShellViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val estado by supervisorViewModel.uiState.collectAsStateWithLifecycle()
+    val crearTecnico by supervisorViewModel.crearTecnicoState.collectAsStateWithLifecycle()
     val confirmacion by shellViewModel.confirmacion.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) { supervisorViewModel.cargar() }
@@ -143,7 +145,20 @@ fun SupervisorRaiz(
             onAprobarProtocolo = { supervisorViewModel.revisarProtocolo(it, aprobar = true) },
             onRechazarProtocolo = { supervisorViewModel.revisarProtocolo(it, aprobar = false) },
             nombreEmpresa = supervisorViewModel::nombreEmpresa,
-            nombreTecnico = supervisorViewModel::nombreTecnico
+            nombreTecnico = supervisorViewModel::nombreTecnico,
+            pestanaTecnicos = {
+                CrearTecnicoFormulario(
+                    estado = crearTecnico,
+                    tecnicos = estado.tecnicos,
+                    onRutChange = supervisorViewModel::onTecnicoRutChange,
+                    onNombreChange = supervisorViewModel::onTecnicoNombreChange,
+                    onApellidoChange = supervisorViewModel::onTecnicoApellidoChange,
+                    onTelefonoChange = supervisorViewModel::onTecnicoTelefonoChange,
+                    onCorreoChange = supervisorViewModel::onTecnicoCorreoChange,
+                    onCrear = supervisorViewModel::crearTecnico,
+                    onCerrarClave = supervisorViewModel::cerrarClaveTemporal
+                )
+            }
         )
         ConfirmacionAnimada(
             mensaje = confirmacion,

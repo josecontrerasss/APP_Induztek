@@ -148,6 +148,19 @@ data class AsignacionDto(
     val fechaAsignacion: String?
 )
 
+data class TecnicoCrearDto(
+    val rut: String,
+    val nombre: String,
+    val apellido: String,
+    val telefono: String,
+    val correo: String
+)
+
+data class TecnicoCreadoDto(
+    val tecnico: UsuarioDto,
+    val claveTemporal: String
+)
+
 data class AsignacionCrearDto(
     val idCliente: Int,
     val nombreCliente: String,

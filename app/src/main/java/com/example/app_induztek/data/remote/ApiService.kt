@@ -18,6 +18,8 @@ import com.example.app_induztek.data.remote.dto.VisitaDto
 import retrofit2.Response
 import com.example.app_induztek.data.remote.dto.AsignacionCrearDto
 import com.example.app_induztek.data.remote.dto.AsignacionDto
+import com.example.app_induztek.data.remote.dto.TecnicoCrearDto
+import com.example.app_induztek.data.remote.dto.TecnicoCreadoDto
 import com.example.app_induztek.data.remote.dto.EquipoCrearDto
 import com.example.app_induztek.data.remote.dto.InstalacionCrearDto
 import retrofit2.http.Body
@@ -80,6 +82,9 @@ interface ApiService {
 
     @GET("usuarios")
     suspend fun usuariosPorRol(@Query("rol") rol: String): Response<List<UsuarioDto>>
+
+    @POST("usuarios/tecnicos")
+    suspend fun crearTecnico(@Body request: TecnicoCrearDto): Response<TecnicoCreadoDto>
 
     @GET("asignaciones")
     suspend fun asignaciones(): Response<List<AsignacionDto>>

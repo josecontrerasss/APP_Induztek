@@ -12,6 +12,11 @@ object ContactoValidator {
         return usuario.any { it.isLetter() } && dominio.any { it.isLetter() }
     }
 
+    fun nombreValido(nombre: String): Boolean {
+        val limpio = nombre.trim()
+        return limpio.length in 2..30 && limpio.all { it.isLetter() }
+    }
+
     fun telefonoValido(telefono: String): Boolean {
         val digitos = telefono.filter { it.isDigit() }
         val numero = if (digitos.length == 11 && digitos.startsWith("56")) digitos.drop(2) else digitos
