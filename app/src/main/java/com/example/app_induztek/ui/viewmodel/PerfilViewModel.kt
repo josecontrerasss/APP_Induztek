@@ -1,7 +1,6 @@
 package com.example.app_induztek.ui.viewmodel
 
 import com.example.app_induztek.ui.util.FiltrosEntrada
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_induztek.data.local.entities.UsuarioEntity
@@ -14,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.example.app_induztek.data.repository.ResultadoCambioClave
+import com.example.app_induztek.security.ContactoValidator
 import com.example.app_induztek.security.PasswordPolicy
 
 data class PerfilEditState(
@@ -108,11 +108,10 @@ class PerfilViewModel(
         val nombre = current.nombre.trim()
         val correo = current.correo.trim()
         val telefono = current.telefono.trim()
-        val digitos = telefono.count { it.isDigit() }
 
         val nombreError = if (nombre.isBlank()) "El nombre es obligatorio." else null
-        val correoError = if (Patterns.EMAIL_ADDRESS.matcher(correo).matches()) null else "Ingresa un correo válido."
-        val telefonoError = if (telefono.isNotEmpty() && digitos !in 8..12) "El teléfono debe tener entre 8 y 12 dígitos." else null
+        val correoError = if (ContactoValidator.correoValido(correo)) null else "Ingresa un correo válido."
+        val telefonoError = if (telefono.isNotEmpty() && !ContactoValidator.telefonoValido(telefono)) "Teléfono inválido. Ejemplo: +56 9 1234 5678" else null
 
         if (nombreError != null || correoError != null || telefonoError != null) {
             _perfilEdit.value = current.copy(

@@ -8,6 +8,8 @@ object RutValidator {
         val cuerpo = limpio.dropLast(1)
         val dv = limpio.last()
         if (cuerpo.any { !it.isDigit() }) return false
+        if (cuerpo.length !in 7..8) return false
+        if (cuerpo.all { it == cuerpo.first() }) return false
         if (!dv.isDigit() && dv != 'K') return false
         return calcularDv(cuerpo) == dv
     }

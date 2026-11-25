@@ -1,12 +1,12 @@
 package com.example.app_induztek.ui.viewmodel
 
 import com.example.app_induztek.ui.util.FiltrosEntrada
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_induztek.data.local.entities.UsuarioEntity
 import com.example.app_induztek.data.repository.InduztekRepository
 import com.example.app_induztek.data.repository.ResultadoRegistro
+import com.example.app_induztek.security.ContactoValidator
 import com.example.app_induztek.security.PasswordPolicy
 import com.example.app_induztek.security.RutValidator
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -100,7 +100,7 @@ class RegistroViewModel(
         return estado.copy(
             rutError = if (RutValidator.esValido(estado.rut.trim())) null else "RUT inválido",
             nombreError = if (estado.nombre.isBlank()) "El nombre o razón social es obligatorio" else null,
-            correoError = if (Patterns.EMAIL_ADDRESS.matcher(estado.correo.trim()).matches()) null else "Correo electrónico inválido",
+            correoError = if (ContactoValidator.correoValido(estado.correo)) null else "Correo electrónico inválido",
             telefonoError = validarTelefono(estado.telefono),
             contrasenaError = if (PasswordPolicy.evaluar(estado.contrasena).valida) null else "La contraseña no cumple los requisitos de seguridad",
             confirmarError = if (estado.confirmarContrasena.isNotEmpty() && estado.confirmarContrasena == estado.contrasena) null else "Las contraseñas no coinciden",
@@ -110,7 +110,6 @@ class RegistroViewModel(
 
     private fun validarTelefono(telefono: String): String? {
         if (telefono.isBlank()) return null
-        val digitos = telefono.count { it.isDigit() }
-        return if (digitos in 8..12) null else "El teléfono debe tener entre 8 y 12 dígitos"
+        return if (ContactoValidator.telefonoValido(telefono)) null else "Teléfono inválido. Ejemplo: +56 9 1234 5678"
     }
 }

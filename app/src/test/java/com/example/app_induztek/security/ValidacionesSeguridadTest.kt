@@ -17,6 +17,24 @@ class ValidacionesSeguridadTest {
     }
 
     @Test
+    fun rutConTodosLosDigitosIgualesEsInvalido() {
+        RutValidator.esValido("11.111.111-1") shouldBe false
+    }
+
+    @Test
+    fun correoConSoloNumerosAntesDelArrobaEsInvalido() {
+        ContactoValidator.correoValido("1111@asdas.cl") shouldBe false
+        ContactoValidator.correoValido("contacto@mineranorte.cl") shouldBe true
+    }
+
+    @Test
+    fun telefonoChilenoDebeTenerNueveDigitosSinRepetirse() {
+        ContactoValidator.telefonoValido("+56 9 1234 5678") shouldBe true
+        ContactoValidator.telefonoValido("1111111") shouldBe false
+        ContactoValidator.telefonoValido("999999999") shouldBe false
+    }
+
+    @Test
     fun claveSinMayusculaNiNumeroNiEspecialNoCumpleLaPolitica() {
         val resultado = PasswordPolicy.evaluar("abcdefgh")
 
